@@ -1,28 +1,31 @@
 import linecache as lc
 
-def stuff():
+#set the variable name var in the config file to value val
+def set_config_var(fname, var, val):
     try:
-		fp = open(cfgfile2, 'r+') # open file for read + write
-		prev_len = 0
-		while True:
-			#this loop reads lines and updates the file pointer
-			#location each iteration until the desired text
-			#is reached (overshoots one line)
-			prev = fp.readline()
-			if 'external_field_normal' in prev:
-				prev_len = len(prev)
-				break
-			pass
-		#backtrack one line by length of desired text -> go up one line
-		fp.seek(fp.tell() - prev_len)
-		fp.write('external_field_normal ' + str(STTdir[0]) + ' ' + str(STTdir[1]) + ' ' + str(STTdir[2]) + '\n') 
-		pass
-	finally:
-		fp.close()
-		pass
-    return()
+        print('Opening ' + fname + '\n')
+        fp = open(fname, 'r+') # open file for read + write
+        prev_len = 0
+        while True:
+            #this loop reads lines and updates the file pointer
+            #location each iteration until the desired text
+            #is reached (overshoots one line)
+            prev = fp.readline()
+            if var in prev:
+                prev_len = len(prev)
+                break
+            pass
+        #backtrack one line by length of desired text -> go up one line
+        fp.seek(fp.tell() - prev_len)
+        fp.write(var + ' ' + str(val) + '\n')
+        fp.close()
+        pass
+    except IOError:
+        print('File error!\n\n\n')
+        return(-1)
+    return(0)
 
-def parse_for_keyword(f_name):
+def list_keyword_and_edit(f_name):
 	#streach goal: make tk gui to modify
     try:
         fp = open(f_name, 'r+') # open file for read + write
