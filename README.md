@@ -12,9 +12,11 @@ git clone --branch develop https://github.com/spirit-code/spirit.git
 
 Once this is done, set directory to the downloaded location of the git clone and run in this order:
 
-./clean.sh       # to ensure clean install. Optional but recomended
-./cmake.sh       # to generate a cmake file to be used in compiling your module/library
-./make.sh -jN    # where N is the number of threads that you can run at one time at most, and as many as you feel like at least
+./clean.sh     # to ensure clean install. Optional but recomended
+
+./cmake.sh     # to generate a cmake file to be used in compiling your module/library
+
+./make.sh -jN  # where N is the number of threads that you can run at one time at most, and as many as you feel like at least
 
 After this, the module needs to be added into python so that it can be used. To do this, run:
 
