@@ -1,4 +1,6 @@
 # Spirit_sandbox
+Spirit spin simulation framework: see spirit-code.github.io
+
 The first required step to use this Sandbox is to install spirit. To install spirit from the release - or any branch if you so choose, first ensure that you have these dependencies (this setup instruction assumes you are running Linux):
 git and cmake
 
