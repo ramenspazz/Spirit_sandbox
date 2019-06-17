@@ -37,6 +37,8 @@ def main():
 		tS = 0.001 # LLG time step
 		hval = float(raw_input("enter H field strength:")) # magnetic Field direction
 		js = float(raw_input("enter current val:")) # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
+		x_size = 0
+		y_size = 0
 
 		STTdir = [1, 0, 0] # polarization direction
 		for i in range(len(STTdir)):
@@ -53,12 +55,12 @@ def main():
 		if read_config:
 			betaD = float(raw_input('enter beta: '))
 			file_parser.set_config_var(config_fname, 'llg_beta', betaD)
-
-		x_size = int(raw_input('x lattice size: '))
-   		y_size = int(raw_input('y lattice size: '))
+		else:
+			x_size = int(raw_input('x lattice size: '))
+   			y_size = int(raw_input('y lattice size: '))
 		
 		with state.State(configfile=config_fname, quiet=True) as i_state:
-			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size)
+			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
 
 
 		in_var = 1
@@ -66,7 +68,9 @@ def main():
 			in_var = int(raw_input("-1 to exit program, 0 to exit plotting, 1 to plot."))
 			if in_var == 1:
 				in_var = raw_input("enter file name to plot: ")
-				plot_out.Plot_Lattice(in_var, x_size, y_size)
+				xs = int(raw_input('x = '))
+				ys = int(raw_input('y = '))
+				plot_out.Plot_Lattice(in_var, xs, ys)
 				in_var = 1
 	return(0)#main()
 #end main
