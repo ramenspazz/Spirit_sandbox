@@ -19,15 +19,13 @@ import sim_script
 ### =====================================================================================
 #initial variables
 
-
-
 def main():
 	in_var = 0
 	config_fname = ''
 
 	read_config = int(raw_input('read in a config file?(0/1): '))
 	if read_config:
-		config_fname = raw_input('enter config your_file_name.txt: ')
+		config_fname = raw_input('enter config your_file_name.cfg: ')
 
 	while in_var != -1:
 		#initial parameters
@@ -45,28 +43,28 @@ def main():
 		hdir = [0.0, 0.0, 1.0] # magnetic Field direction
 		K =  0.0  # Anisotropy
 		Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
-		J = 10.0
-		DMI = 3.0
-		Dij = []
+		#J = 10.0
+		#DMI = 3.0
+		#Dij = []
 		alphaD = float(raw_input('enter alpha: ')) # Damping
 
 		if read_config:
 			betaD = float(raw_input('enter beta: '))
 			file_parser.set_config_var(config_fname, 'llg_beta', betaD)
 
-		x_size = int(raw_input('x lattice size: '))
-   		y_size = int(raw_input('y lattice size: '))
+		#x_size = int(raw_input('x lattice size: '))
+   		#y_size = int(raw_input('y lattice size: '))
 		
-		with state.State(configfile=config_fname, quiet=True) as i_state:
-			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size)
+		with state.State(configfile=config_fname, quiet=False) as i_state:
+			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, alphaD)
 
 
 		in_var = 1
 		while in_var == 1:
 			in_var = int(raw_input("-1 to exit program, 0 to exit plotting, 1 to plot."))
 			if in_var == 1:
-				in_var = raw_input("enter file name to plot: ")
-				plot_out.Plot_Lattice(in_var, x_size, y_size)
+				#in_var = raw_input("enter file name to plot: ")
+				#plot_out.Plot_Lattice(in_var, x_size, y_size)
 				in_var = 1
 	return(0)#main()
 #end main
