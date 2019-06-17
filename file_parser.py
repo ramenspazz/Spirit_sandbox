@@ -1,29 +1,62 @@
 import linecache as lc
 
-#set the variable name var in the config file to value val
-def set_config_var(fname, var, val):
-    try:
-        print('Opening ' + fname + '\n')
-        fp = open(fname, 'r+') # open file for read + write
-        prev_len = 0
-        while True:
-            #this loop reads lines and updates the file pointer
-            #location each iteration until the desired text
-            #is reached (overshoots one line)
-            prev = fp.readline()
-            if var in prev:
-                prev_len = len(prev)
-                break
+class Parse_File:
+    #constructor
+    def __init__(self, fname):
+        self.fname = fname # set the file name
+        self.fp = None
+    #with enter statement
+    def __enter__(self):
+        self.fp = open(self.fname, 'r+') # open file and assign to fp
+        return self
+    #destructor
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.fp.close()
+
+    # returns the line number of the first instance of var found
+    # TODO : start search from specific location in file
+    def find_line_number(self, var):
+        try:
+            (self.fp).seek(0)
+            prev_len = 0
+            while True:
+                #this loop reads lines and updates the file pointer
+                #location each iteration until the desired text
+                #is reached (overshoots one line)
+                prev = self.fp.readline()
+                if var in prev:
+                    prev_len = len(prev)
+                    break
+                pass
+            #backtrack one line by length of desired text -> go up one line
+            ln_num = self.fp.tell() - prev_len
+        except IOError:
+            print('File error!\n\n\n')
+            return(-1)
+        return(ln_num)
+    #set the variable name var in file to value val
+    def set_config_var(self, var, val):
+        try:
+            (self.fp).seek(self.find_line_number(var))
+            (self.fp).write(var + ' ' + str(val) + '\n')
             pass
-        #backtrack one line by length of desired text -> go up one line
-        fp.seek(fp.tell() - prev_len)
-        fp.write(var + ' ' + str(val) + '\n')
-        fp.close()
-        pass
-    except IOError:
-        print('File error!\n\n\n')
-        return(-1)
-    return(0)
+        except IOError:
+            print('File error!\n\n\n')
+            return(-1)
+        return
+    def write_to_file(self, val, line_num=None):
+        try:
+            if line_num is None:
+                (self.fp).seek(line_num)
+            (self.fp).write(val)
+        except IOError:
+            print('File error!\n\n\n')
+            return(-1)
+
+    def delete_contents(self):
+        (self.fp).seek(0)
+        (self.fp).truncate()
+        return
 
 def list_keyword_and_edit(f_name):
 	#streach goal: make tk gui to modify

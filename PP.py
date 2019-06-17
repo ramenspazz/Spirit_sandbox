@@ -12,59 +12,68 @@ import numpy as np
 from scipy import special
 #custom scripts
 import plot_out
-import file_parser
 import sim_script
-
-### =====================================================================================
-### =====================================================================================
-#initial variables
+import file_parser
+import generate_configs
 
 def main():
 	in_var = 0
 	config_fname = ''
 
-	read_config = int(raw_input('read in a config file?(0/1): '))
-	if read_config:
-		config_fname = raw_input('enter config your_file_name.cfg: ')
-
 	while in_var != -1:
 		#initial parameters
+		x_size = 0
+		y_size = 0
 		Mtd = 1
-		Slvr = int(raw_input('enter solver num(1-3):'))
 		convThr = 1.00e-12 # Convergence condition
 		tS = 0.001 # LLG time step
-		hval = float(raw_input("enter H field strength:")) # magnetic Field direction
-		js = float(raw_input("enter current val:")) # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
-
 		STTdir = [1, 0, 0] # polarization direction
-		for i in range(len(STTdir)):
-				STTdir[i] = float(raw_input('input Polerization element: '))
-
 		hdir = [0.0, 0.0, 1.0] # magnetic Field direction
 		K =  0.0  # Anisotropy
 		Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
-		#J = 10.0
-		#DMI = 3.0
-		#Dij = []
+		J = 10.0
+		DMI = 3.0
+		Dij = []
+
+		read_config = int(raw_input('read in a config file?(0/1): '))
+		if read_config:
+			config_fname = raw_input('enter config your_file_name.txt: ')
+			in_var = int(raw_input('Generate new r_pos and h file (0/1)?: '))
+			if in_var == 1:
+				x_size = int(raw_input('x lattice size: '))
+				y_size = int(raw_input('y lattice size: '))
+				generate_configs.gen_r_pos(x_size,y_size)
+				generate_configs.gen_h_file(x_size,y_size, J, DMI)
+
+		hval = float(raw_input("enter H field strength:")) # magnetic Field direction
+		js = float(raw_input("enter current val:")) # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
 		alphaD = float(raw_input('enter alpha: ')) # Damping
 
 		if read_config:
 			betaD = float(raw_input('enter beta: '))
-			file_parser.set_config_var(config_fname, 'llg_beta', betaD)
+			with file_parser.Parse_File(config_fname) as fp:
+				fp.set_config_var('llg_beta', betaD)
+				pass
+		else:
+			x_size = int(raw_input('x lattice size: '))
+   			y_size = int(raw_input('y lattice size: '))
 
-		#x_size = int(raw_input('x lattice size: '))
-   		#y_size = int(raw_input('y lattice size: '))
+		for i in range(len(STTdir)):
+				STTdir[i] = float(raw_input('input Polerization element: '))
 		
-		with state.State(configfile=config_fname, quiet=False) as i_state:
-			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, alphaD)
-
+		Slvr = int(raw_input('enter solver num(1-3):'))
+		
+		with state.State(configfile=config_fname, quiet=True) as i_state:
+			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
 
 		in_var = 1
 		while in_var == 1:
 			in_var = int(raw_input("-1 to exit program, 0 to exit plotting, 1 to plot."))
 			if in_var == 1:
-				#in_var = raw_input("enter file name to plot: ")
-				#plot_out.Plot_Lattice(in_var, x_size, y_size)
+				in_var = raw_input("enter file name to plot: ")
+				xs = int(raw_input('x = '))
+				ys = int(raw_input('y = '))
+				plot_out.Plot_Lattice(in_var, xs, ys)
 				in_var = 1
 	return(0)#main()
 #end main
