@@ -11,7 +11,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
     rand_flag = False
     Skyrmion_size = 0
     calc_iter = 0
-    usr_in = int(raw_input('Random or skyrmion(0/1): '))
+    usr_in = int(raw_input('Set None or Random or skyrmion(-1/0/1): '))
     if usr_in == 1:
         Skyrmion_size = input("Enter Skyrmion size:")
     elif usr_in == 0:
@@ -21,43 +21,53 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
     #hamiltonian.set_anisotropy(i_state,K,Kdir)
     print('Setting up initial state...\n')
     if not read_config:#if config file was set, dont set custom lattice size or BC
-        geometry.set_n_cells(i_state,n_cells=[x_size, y_size, 1])
         hamiltonian.set_boundary_conditions(i_state, [1,1,0])
         hamiltonian.set_dmi(i_state,1,[DMI], 1)
+    geometry.set_n_cells(i_state,n_cells=[x_size, y_size, 1])
+    parameters.llg.set_temperature(i_state,0.0)
+    parameters.llg.set_damping(i_state, alphaD)
     parameters.llg.set_convergence(i_state, convThr)
     parameters.llg.set_output_configuration(i_state,True,True,4)
+    hamiltonian.set_field(i_state,hval,hdir)
+    parameters.llg.set_stt(i_state,True,0,STTdir)
+    hamiltonian.set_anisotropy(i_state,K,Kdir)
     parameters.llg.set_timestep(i_state, tS)
     parameters.llg.set_iterations(i_state,1,1)
-    parameters.llg.set_stt(i_state,True,0,STTdir)
-    parameters.llg.set_damping(i_state, alphaD)
-    hamiltonian.set_exchange(i_state,1,[J])
-    hamiltonian.set_anisotropy(i_state,K,Kdir)
+
     print('Done!\n')
 
     if not rand_flag:
         if not read_config:
             configuration.plus_z(i_state) #set all spin to +z
         print('Initilizing Skyrmion...\n')
-        configuration.skyrmion(i_state, Skyrmion_size, phase=-90) #initialize skyrmion
+        configuration.skyrmion(i_state, Skyrmion_size, phase=90) #initialize skyrmion
+        if os.path.isfile("start.ovf"):
+            os.remove("start.ovf")
+            pass
+        io.chain_write(i_state,"start.ovf")
+        print('Wrote start.ovf\n')
         print('Done!\n')
+        pass
     else:
+        print('Initilizing random state...\n')
         configuration.random(i_state) #initialize random
-    print('Generating starting configuration...\n')
-    simulation.start(i_state,Mtd,Slvr)
-    if os.path.isfile("start.ovf"):
-        os.remove("start.ovf")
+        print('Done!\n')
         pass
 
-    print('Writing start.ovf...\n')
-    io.chain_write(i_state,"start.ovf")
-    simulation.stop_all
-    print('Done!\n')
-    usr_in = int(raw_input('preform pre-minimization 5000 itt?(0/1): '))
-    print('Running simulation...\n')
+    usr_in = int(raw_input('preform minimization?(0/1): '))
     if usr_in == 1:
+        calc_iter = int(raw_input("set num itterations to minimize: "))
+        parameters.llg.set_temperature(i_state,0.0)
+        parameters.llg.set_damping(i_state, alphaD)
+        parameters.llg.set_convergence(i_state, convThr)
+        parameters.llg.set_output_configuration(i_state,True,True,4)
+        hamiltonian.set_field(i_state,hval,hdir)
+        parameters.llg.set_stt(i_state,True,0,STTdir)
+        hamiltonian.set_anisotropy(i_state,K,Kdir)
+        parameters.llg.set_timestep(i_state, tS)
         #minimize
         print('Minimizing\n')
-        parameters.llg.set_iterations(i_state,5000,5000)
+        parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
         simulation.start(i_state,Mtd,0)
         if os.path.isfile("min.ovf"):
             os.remove("min.ovf")
@@ -65,8 +75,18 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
         io.chain_write(i_state,"min.ovf")
         simulation.stop_all
 
-    calc_iter = int(raw_input("set num itterations to run: "))
+    calc_iter = int(raw_input("set num itterations to run, -1 to quit: "))
+    if calc_iter == -1:
+        return
     parameters.llg.set_stt(i_state,True,js,STTdir)
+    parameters.llg.set_temperature(i_state,0.0)
+    parameters.llg.set_damping(i_state, alphaD)
+    parameters.llg.set_convergence(i_state, convThr)
+    parameters.llg.set_output_configuration(i_state,True,True,4)
+    hamiltonian.set_field(i_state,hval,hdir)
+    parameters.llg.set_stt(i_state,True,0,STTdir)
+    hamiltonian.set_anisotropy(i_state,K,Kdir)
+    parameters.llg.set_timestep(i_state, tS)
     print('Running simulation...\n')
     if not read_config:#no config loaded, running sandbox
         itt_num = int(calc_iter / 10)

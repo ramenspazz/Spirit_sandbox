@@ -1,4 +1,7 @@
 import linecache as lc
+import fileinput
+import glob
+import os
 
 class Parse_File:
     #constructor
@@ -30,10 +33,12 @@ class Parse_File:
                 pass
             #backtrack one line by length of desired text -> go up one line
             ln_num = self.fp.tell() - prev_len
+            (self.fp).seek(0)
         except IOError:
             print('File error!\n\n\n')
             return(-1)
         return(ln_num)
+
     #set the variable name var in file to value val
     def set_config_var(self, var, val):
         try:
@@ -44,9 +49,10 @@ class Parse_File:
             print('File error!\n\n\n')
             return(-1)
         return
+
     def write_to_file(self, val, line_num=None):
         try:
-            if line_num is None:
+            if line_num is not None:
                 (self.fp).seek(line_num)
             (self.fp).write(val)
         except IOError:
@@ -57,6 +63,7 @@ class Parse_File:
         (self.fp).seek(0)
         (self.fp).truncate()
         return
+
 
 def list_keyword_and_edit(f_name):
 	#streach goal: make tk gui to modify
@@ -99,3 +106,17 @@ def list_keyword_and_edit(f_name):
     finally:
         fp.close()
     print("end of editing\n\n")
+
+#concatenates fname2 into fname1 -> fname1
+def concatenate_files(fname1, fname2, outname):
+    file_list = [fname1, fname2]
+    print('Writing config file...')
+    with open(outname, 'r+') as file:
+        if os.path.isfile(outname):
+            file.seek(0)
+            file.truncate()
+            pass
+        input_lines = fileinput.input(file_list)
+        file.writelines(input_lines)
+    print('Done!')
+    return

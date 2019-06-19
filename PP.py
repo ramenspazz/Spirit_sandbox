@@ -32,7 +32,7 @@ def main():
 		K =  0.0  # Anisotropy
 		Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
 		J = 10.0
-		DMI = 3.0
+		DMI = 5.0
 		Dij = []
 
 		read_config = int(raw_input('read in a config file?(0/1): '))
@@ -42,8 +42,14 @@ def main():
 			if in_var == 1:
 				x_size = int(raw_input('x lattice size: '))
 				y_size = int(raw_input('y lattice size: '))
+				#update bravis vector
+				with file_parser.Parse_File('gen_config.txt') as fp:
+					line_num = fp.find_line_number('bravais_vectors')
+					fp.write_to_file('bravais_vectors\n{:d} 0 0\n0 {:d} 0\n0 0 1\n'.format(x_size,y_size), line_num)
+					pass
 				generate_configs.gen_r_pos(x_size,y_size)
 				generate_configs.gen_h_file(x_size,y_size, J, DMI)
+				file_parser.concatenate_files('gen_config.txt', 'r_pos.txt', config_fname)
 
 		hval = float(raw_input("enter H field strength:")) # magnetic Field direction
 		js = float(raw_input("enter current val:")) # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
@@ -63,7 +69,7 @@ def main():
 		
 		Slvr = int(raw_input('enter solver num(1-3):'))
 		
-		with state.State(configfile=config_fname, quiet=True) as i_state:
+		with state.State(configfile=config_fname, quiet=False) as i_state:
 			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
 
 		in_var = 1
