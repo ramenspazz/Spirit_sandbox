@@ -11,6 +11,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
     rand_flag = False
     Skyrmion_size = 0
     calc_iter = 0
+
     usr_in = int(raw_input('Set None or Random or skyrmion(-1/0/1): '))
     if usr_in == 1:
         Skyrmion_size = input("Enter Skyrmion size:")
@@ -41,6 +42,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
             configuration.plus_z(i_state) #set all spin to +z
         print('Initilizing Skyrmion...\n')
         configuration.skyrmion(i_state, Skyrmion_size, phase=-90) #initialize skyrmion
+
         if os.path.isfile("start.ovf"):
             os.remove("start.ovf")
             pass
@@ -68,7 +70,8 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
         print('Minimizing\n')
         parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
         simulation.start(i_state,Mtd,0)
-        if os.path.isfile("minf.ovf"):
+
+        if os.path.isfile("min.ovf"):
             os.remove("min.ovf")
             pass
         io.chain_write(i_state,"min.ovf")

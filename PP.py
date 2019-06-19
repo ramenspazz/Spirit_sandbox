@@ -27,6 +27,7 @@ def main():
 		Mtd = 1
 		convThr = 1.00e-12 # Convergence condition
 		tS = 0.001 # LLG time step
+
 		STTdir = [1, 0, 0] # polarization direction
 		hdir = [0.0, 0.0, 1.0] # magnetic Field direction
 		K =  0.0  # Anisotropy
@@ -58,6 +59,7 @@ def main():
 
 		if read_config:
 			betaD = float(raw_input('enter beta: '))
+      
 			with file_parser.Parse_File(config_fname) as fp:
 				fp.set_config_var('llg_beta', str(betaD))
 				pass
