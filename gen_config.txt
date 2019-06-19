@@ -6,6 +6,7 @@ mc_output_folder   .
 gneb_output_folder .
 mmf_output_folder  .
 ema_output_folder  .
+
 llg_beta 0.5
 
 ################## Hamiltonian ###################
@@ -24,22 +25,21 @@ interaction_pairs_file   h.txt
 
 ################### Geometry #####################
 
-lattice_constant 6.0
-
+### The bravais lattice type
+bravais_lattice sc
+lattice_constant 1
 
 ### The bravais lattice type
 bravais_vectors
-40 0 0
-0 80 0
+50 0 0
+0 100 0
 0 0 1
-
-
 
 #basis cells along principal
 ### directions (a b c)
 n_basis_cells 1 1 1
 
-################# End Geometry ###################
+############### End Geometry ###################
 mu_s 1.24
 ### Atomic basis
 

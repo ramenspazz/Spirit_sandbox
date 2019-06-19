@@ -33,7 +33,6 @@ class Parse_File:
                 pass
             #backtrack one line by length of desired text -> go up one line
             ln_num = self.fp.tell() - prev_len
-            (self.fp).seek(0)
         except IOError:
             print('File error!\n\n\n')
             return(-1)
@@ -43,7 +42,7 @@ class Parse_File:
     def set_config_var(self, var, val):
         try:
             (self.fp).seek(self.find_line_number(var))
-            (self.fp).write(var + ' ' + str(val) + '\n')
+            (self.fp).write(var + ' ' + val + '\n')
             pass
         except IOError:
             print('File error!\n\n\n')

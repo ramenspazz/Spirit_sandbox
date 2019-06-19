@@ -23,7 +23,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
     if not read_config:#if config file was set, dont set custom lattice size or BC
         hamiltonian.set_boundary_conditions(i_state, [1,1,0])
         hamiltonian.set_dmi(i_state,1,[DMI], 1)
-    geometry.set_n_cells(i_state,n_cells=[x_size, y_size, 1])
+        geometry.set_n_cells(i_state,[x_size, y_size, 1])
     parameters.llg.set_temperature(i_state,0.0)
     parameters.llg.set_damping(i_state, alphaD)
     parameters.llg.set_convergence(i_state, convThr)
@@ -40,20 +40,19 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
         if not read_config:
             configuration.plus_z(i_state) #set all spin to +z
         print('Initilizing Skyrmion...\n')
-        configuration.skyrmion(i_state, Skyrmion_size, phase=90) #initialize skyrmion
+        configuration.skyrmion(i_state, Skyrmion_size, phase=-90) #initialize skyrmion
         if os.path.isfile("start.ovf"):
             os.remove("start.ovf")
             pass
-        io.chain_write(i_state,"start.ovf")
-        print('Wrote start.ovf\n')
-        print('Done!\n')
         pass
     else:
         print('Initilizing random state...\n')
         configuration.random(i_state) #initialize random
-        print('Done!\n')
         pass
-
+    print('Done!\n')
+    io.chain_write(i_state,"start.ovf")
+    print('Wrote start.ovf\n')
+    
     usr_in = int(raw_input('preform minimization?(0/1): '))
     if usr_in == 1:
         calc_iter = int(raw_input("set num itterations to minimize: "))
@@ -69,7 +68,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, K
         print('Minimizing\n')
         parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
         simulation.start(i_state,Mtd,0)
-        if os.path.isfile("min.ovf"):
+        if os.path.isfile("minf.ovf"):
             os.remove("min.ovf")
             pass
         io.chain_write(i_state,"min.ovf")
