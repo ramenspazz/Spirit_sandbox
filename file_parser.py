@@ -1,18 +1,25 @@
 import linecache as lc
 import fileinput
-import glob
 import os
-
+"""
+Parse_File creates functionality for opening and parsing file within a with statment block
+automatically closing file at the end of the block.
+Inclues: TODO
+"""
 class Parse_File:
-    #constructor
+    #constructor for class
+    #opens sets filename to private class isntance variable
+    #and initiates the file pointer to None for future assignment
     def __init__(self, fname):
         self.fname = fname # set the file name
         self.fp = None
     #with enter statement
+    #sets up functionality to open file in with statement block
+    #and close file at end of block
     def __enter__(self):
         self.fp = open(self.fname, 'r+') # open file and assign to fp
         return self
-    #destructor
+    #destructor for with statement, closes file at end of with block
     def __exit__(self, exc_type, exc_value, traceback):
         self.fp.close()
 
@@ -25,12 +32,17 @@ class Parse_File:
             while True:
                 #this loop reads lines and updates the file pointer
                 #location each iteration until the desired text
-                #is reached (overshoots one line)
+                #is reached. Overshoots one line, so subtract off
+		#the length of the final line reached in this loop
+		#after loop
                 prev = self.fp.readline()
                 if var in prev:
                     prev_len = len(prev)
                     break
-                pass
+		elif prev == None:
+			print('EOF reached!!\n\n')
+			return(-1)
+                continue
             #backtrack one line by length of desired text -> go up one line
             ln_num = self.fp.tell() - prev_len
         except IOError:
@@ -41,6 +53,7 @@ class Parse_File:
     #set the variable name var in file to value val
     def set_config_var(self, var, val):
         try:
+	#seek to the file location passed and overwrite line with {var} {val}\n
             (self.fp).seek(self.find_line_number(var))
             (self.fp).write(var + ' ' + val + '\n')
             pass
@@ -51,16 +64,18 @@ class Parse_File:
 
     def write_to_file(self, val, line_num=None):
         try:
+	#if passed a line number, function will seek to the passed location
             if line_num is not None:
                 (self.fp).seek(line_num)
+	#else, just write to file starting from top (default)
             (self.fp).write(val)
         except IOError:
             print('File error!\n\n\n')
             return(-1)
 
     def delete_contents(self):
-        (self.fp).seek(0)
-        (self.fp).truncate()
+        (self.fp).seek(0) #move to top of file
+        (self.fp).truncate() #truncate all data from top of file
         return
 
 
@@ -72,7 +87,7 @@ def list_keyword_and_edit(f_name):
 		#build read lines
         for i, ln in enumerate(fp):
 			if (ln[0] == "#") or (ln[0] == "\n"):
-				pass
+				continue
 			else:
 				#add variable lines to edit list
 				editlist.append((i,ln))
