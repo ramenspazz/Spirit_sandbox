@@ -27,9 +27,6 @@ def main():
 		Mtd = 1
 		convThr = 1.00e-12 # Convergence condition
 		tS = 0.001 # LLG time step
-
-		STTdir = [1, 0, 0] # polarization direction
-		hdir = [0.0, 0.0, 1.0] # magnetic Field direction
 		K =  0.0  # Anisotropy
 		Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
 		J = 10.0
@@ -53,27 +50,21 @@ def main():
 				generate_configs.gen_h_file(x_size,y_size, J, DMI)
 				file_parser.concatenate_files('gen_config.txt', 'r_pos.txt', config_fname)
 
-		hval = float(raw_input("enter H field strength:")) # magnetic Field direction
-		js = float(raw_input("enter current val:")) # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
 		alphaD = float(raw_input('enter alpha: ')) # Damping
 
 		if read_config:
 			betaD = float(raw_input('enter beta: '))
-      
 			with file_parser.Parse_File(config_fname) as fp:
 				fp.set_config_var('llg_beta', str(betaD))
 				pass
 		else:
 			x_size = int(raw_input('x lattice size: '))
    			y_size = int(raw_input('y lattice size: '))
-
-		for i in range(len(STTdir)):
-				STTdir[i] = float(raw_input('input Polerization element: '))
 		
 		Slvr = int(raw_input('enter solver num(1-4):'))
 		
 		with state.State(configfile=config_fname, quiet=False) as i_state:
-			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, js, STTdir, hdir, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
+			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, hval, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
 
 		in_var = 1
 		while in_var == 1:
