@@ -1,0 +1,45 @@
+### Output Folders
+output_file_tag   boundary
+log_output_folder  .
+llg_output_folder  .
+mc_output_folder   .
+gneb_output_folder .
+mmf_output_folder  .
+ema_output_folder  .
+
+llg_beta 0.5
+
+################## Hamiltonian ###################
+
+### Hamiltonian Type
+### (heisenberg_neighbours, heisenberg_pairs, gaussian)
+hamiltonian                heisenberg_pairs
+
+### Boundary_conditions (a b c): 0(open), 1(periodical)
+boundary_conditions        1 1 0
+
+### Pairs
+interaction_pairs_file   h.txt
+
+################ End Hamiltonian #################
+
+################### Geometry #####################
+
+### The bravais lattice type
+bravais_lattice sc
+lattice_constant 1
+
+### The bravais lattice type
+bravais_vectors
+50 0 0
+0 100 0
+0 0 1
+
+#basis cells along principal
+### directions (a b c)
+n_basis_cells 1 1 1
+
+############### End Geometry ###################
+mu_s 1.24
+### Atomic basis
+
