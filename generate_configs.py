@@ -6,14 +6,17 @@ import os
 def gen_h_file(xsize, ysize, J, D):
     with file_parser.Parse_File('h.txt') as fp:
         fp.delete_contents()
+        
         in_string = '{:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6.3f}  {:<6.3f}  {:<6d}  {:<6d}  {:<6d}\n'
         fp.write_to_file('{:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}\n'.format('i','j','da','db','dc','Jij','Dij','Dija','Dijb','Dijc'))
+        
         for i in range(xsize*ysize):
-            fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,int(math.pow(-1,math.floor((i+1)/(xsize/2))+1)),0))
+            d = int(math.pow(-1,math.floor((i+1)/ysize)+1))
+            fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,d,0,0))
             pass
 
-        for j in range((xsize-1)*ysize):
-            fp.write_to_file(in_string.format(j,j+ysize,0,0,0,J,D,-1,0,0))
+        for j in range(xsize*(ysize-1)):
+            fp.write_to_file(in_string.format(j,j+xsize,0,0,0,J,D,0,-1,0))
             pass
 
 def gen_r_pos(xsize, ysize):

@@ -4,7 +4,6 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
 def Plot_Lattice(f_name, n_cols, n_rows):
-
 	###===============================================###
 	# Itterativly add temporary vectors pulled from		#
 	# output file to a color coded 2D vector field plot #
@@ -36,8 +35,7 @@ def Plot_Lattice(f_name, n_cols, n_rows):
 				M[count / n_cols][count % n_cols] = (temp[2]+1)/2
 				count += 1
 				continue
-		q = plt.quiver(U, V, M, units='xy', angles='xy', pivot='tip', width=0.15, scale=1)
-
+		q = plt.quiver(U, V, M, units='xy', angles='xy', pivot='middle', width=0.2, scale=1.5)
 		plt.show()
 	return
 

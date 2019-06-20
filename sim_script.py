@@ -1,6 +1,7 @@
 #file entry point
 import sys
 import os
+import random
 #spirit inclues
 from spirit import configuration, constants
 from spirit import hamiltonian, geometry, io
@@ -8,7 +9,6 @@ from spirit import parameters, quantities
 from spirit import simulation, state, system
 
 def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config):
-    rand_flag = False
     Skyrmion_size = 0
     calc_iter = 0
     js = 1e-7 # current value
@@ -17,15 +17,9 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
     hval = 25
     sim_count = 0
 
-    usr_in = int(raw_input('Set None, Random, minus z, or skyrmion(-1/0/1/2): '))
-    if usr_in == 1:
+    usr_in = int(raw_input('Set state None, Random, skyrmion, or minus-z (0/1/2/3): '))
+    if usr_in == 2:
         Skyrmion_size = input("Enter Skyrmion size:")
-    elif usr_in == 0:
-        rand_flag = True
-    elif usr_in == 2:
-        print('Setting all spins to -z...\n')
-        configuration.minus_z(i_state)
-        print('Done!\n')
 
     #initialize initial conditions of simulation
     #hamiltonian.set_anisotropy(i_state,K,Kdir)
@@ -44,9 +38,11 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
     parameters.llg.set_timestep(i_state, tS)
     parameters.llg.set_iterations(i_state,1,1)
 
-    print('Done!\n')
-
-    if not rand_flag:
+    if usr_in == 1:
+        print('Initilizing random state...\n')
+        configuration.random(i_state) #initialize random
+        pass
+    elif usr_in == 2:
         if not read_config:
             configuration.plus_z(i_state) #set all spin to +z
         print('Initilizing Skyrmion...\n')
@@ -55,10 +51,11 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
             os.remove("start.ovf")
             pass
         pass
-    else:
-        print('Initilizing random state...\n')
-        configuration.random(i_state) #initialize random
+    elif usr_in == 3:
+        print('Setting all spins to -z...\n')
+        configuration.minus_z(i_state)
         pass
+
     print('Done!\n')
     io.chain_write(i_state,"start.ovf")
     print('Wrote start.ovf\n')
@@ -79,6 +76,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
             parameters.llg.set_stt(i_state,True,0,STTdir)
             hamiltonian.set_anisotropy(i_state,K,Kdir)
             parameters.llg.set_timestep(i_state, tS)
+            parameters.llg.set_direct_minimization(i_state, use_minimization=True)
             #minimize
             print('Minimizing\n')
             parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
@@ -88,6 +86,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
                 pass
             io.chain_write(i_state,"min_{:d}.ovf".format(sim_count))
             simulation.stop_all
+            print('Done!\n')
             sim_count += 1
         continue
     
