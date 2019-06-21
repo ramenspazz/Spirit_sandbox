@@ -1,4 +1,5 @@
 # Spirit_sandbox
+# Installing spirit library
 Spirit spin simulation framework: see spirit-code.github.io
 
 The first required step to use this Sandbox is to install spirit. To install spirit from the release - or any branch if you so choose, first ensure that you have these dependencies (this setup instruction assumes you are running Linux):
@@ -27,5 +28,17 @@ python -m pip install -e /path/to/spirit/core/python/
 sometimes you may need to add --your_username to the flags inorder to properly set permission
 
 And then you should be good to go with spirit.
+
+# Using spirit sandbox
+
+Spirit sanbox is currently set up to perform an experiment
+
+where a DMI interface with applied current generates a skyrmion-antiskyrmion
+
+pair on either side of the interface.
+
+If you would like to use your own DMI (TODO: dmi pattern options), you can edit
+
+generate_config.py
 
 Further instructions incoming!
