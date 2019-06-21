@@ -83,28 +83,35 @@ def list_keyword_and_edit(f_name):
 	#streach goal: make tk gui to modify
     try:
         fp = open(f_name, 'r+') # open file for read + write
-        editlist = []
-		#build read lines
+        editlist = [] #create blank array for storage of variables
+	#start building array enumerated with enumerated variable number and file pointer location
         for i, ln in enumerate(fp):
 			if (ln[0] == "#") or (ln[0] == "\n"):
+			#if line starts with # or is blank, skip
 				continue
 			else:
-				#add variable lines to edit list
+				#add enumerated variable number and
+				#file pointer location when non empty line
+				#is reached
 				editlist.append((i,ln))
 				pass
         #display all variables to edit
         for i, var in enumerate(editlist):
-            print('VN' + str(i + 1) + ': ' + var[1])
-		#move fp to begining of file
+	#display variable number next to actual variable entry in file
+            print('VN {:d}: {:s}'.format(i+1,var[1]))
+	#move fp to begining of file to begin editing and reset counters
         fp.seek(0)
         user_in = ''
         line_num = 0
         print('Enter q to quit editing here or at variable number prompt\n\n')
-        while True:
+        while True:#start edit loop, exit on user input == 'q'
             user_in = raw_input('Enter variable number to edit: ')
             if user_in == 'q':
                 break
             line_num = int(user_in)
+            if (line_num > len(editlist)) or (line_num <= 0):#check that entered line number is valid and non negative
+                print('Out of range of list! Enter proper index.\n')
+                continue
             user_in = raw_input(editlist[line_num - 1][1] + '\nReplace with?:\n')
             #find and replace line with user text
             while not(editlist[line_num - 1][1] == fp.readline()):
