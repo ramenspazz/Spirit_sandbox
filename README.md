@@ -9,7 +9,8 @@ Run:
 
 git clone https://github.com/spirit-code/spirit.git
 
-to download from the release branch. If you want to download from the devlopment branch which has more support for our purposes, use instead:
+to download from the release branch. If you want to download from the devlopment branch which has more support for our purposes, 
+use instead:
 
 git clone --branch develop https://github.com/spirit-code/spirit.git
 
@@ -32,13 +33,12 @@ And then you should be good to go with spirit.
 # Using spirit sandbox
 
 Spirit sanbox is currently set up to perform an experiment
-
 where a DMI interface with applied current generates a skyrmion-antiskyrmion
-
 pair on either side of the interface.
 
-If you would like to use your own DMI (TODO: dmi pattern options), you can edit
-
-generate_config.py
+If you would like to use your own ansotropy, you can enter a function in terms of one variable. This function will then be
+rotated 90deg ccw, and a reflection across the center line of the lattice also generated. The function will then fill in between 
+these two functions to a specified width.
+Alternativly, you can set a random anisotropy.
 
 Further instructions incoming!
