@@ -64,9 +64,14 @@ def main():
 
 				in_var = int(raw_input('Use a custom anis (0/1)?: '))
 				if in_var == 1:
-					pattern = raw_input('Enter math expression here in terms of x\nEnter an integer for a box: ')
-					width = int(raw_input('Enter width of pattern: '))
-					generate_configs.gen_anis_pattern(x_size,y_size, pattern, width, 0.9)
+					in_var = int(raw_input('Use random or pattern generated anisotropy (0/1)?: '))
+					if in_var == 1:
+						pattern = raw_input('Enter math expression here in terms of x\nEnter an integer for a box: ')
+						width = int(raw_input('Enter width of pattern: '))
+						generate_configs.gen_anis_pattern(x_size,y_size, pattern, width, 0.9)
+					elif in_var == 0:
+						mod_val = int(raw_input('Enter modulo value: '))
+						generate_configs.gen_anis_random(x_size,y_size, mod_val, 0.9)
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('anisotropy_file', 'anisotropy.txt\n')
 				else:

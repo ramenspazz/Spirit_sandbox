@@ -3,23 +3,24 @@ import file_parser
 import fileinput
 import sympy as sy
 import numpy as np
+import random
 import math
 import os
 
-def gen_h_file(xsize, ysize, J, D):
+def gen_h_file(x_size, y_size, J, D):
     with file_parser.Parse_File('h.txt') as fp:
         fp.delete_contents()
         
         in_string = '{:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6.3f}  {:<6.3f}  {:<6d}  {:<6d}  {:<6d}\n'
         fp.write_to_file('{:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}\n'.format('i','j','da','db','dc','Jij','Dij','Dija','Dijb','Dijc'))
         
-        for i in range(xsize*ysize):
-            d = int(math.pow(-1,math.floor((i+1)/ysize)+1))
+        for i in range(x_size*y_size):
+            d = int(math.pow(-1,math.floor((i+1)/y_size)+1))
             fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
             pass
 
-        for j in range(xsize*(ysize-1)):
-            fp.write_to_file(in_string.format(j,j+xsize,0,0,0,J,D,-1,0,0))
+        for j in range(x_size*(y_size-1)):
+            fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,-1,0,0))
             pass
 
 def gen_anis_pattern(x_size, y_size, pattern, width, K_mag = None):
@@ -87,11 +88,10 @@ def gen_anis_pattern(x_size, y_size, pattern, width, K_mag = None):
     return
 
 
-
-def gen_anis_file(x_size, y_size, start, end, K_mag = None):
+def gen_anis_random(x_size, y_size, mod_val, K_mag = None):
     with file_parser.Parse_File('anisotropy.txt') as fp:
+        print('generating pattern...\n')
         fp.delete_contents()
-        write_flag = False
         header_string = '{:<6s} {:<6s} {:<6s} {:<6s} {:<6s}\n'.format('i', 'K', 'Kx', 'Ky', 'Kz')
         in_string = '{:<6d} {:<6.3f} {:<6.3f} {:<6.3f} {:<6.3f}\n'
 
@@ -99,38 +99,29 @@ def gen_anis_file(x_size, y_size, start, end, K_mag = None):
             K = K_mag
         else:
             K = 1
-
         fp.write_to_file(header_string)
+
         for i in range(x_size*y_size):
-            if (i == (start[0]*y_size + start[1])) and (not write_flag):
-                #set the write flag to true so that
-                #the next itterations can start writing
-                #anis up till the specified endpoint passed
-                #in function call
-                write_flag = True
-            elif (i == (end[0]*y_size + end[1])) and (write_flag):
-                fp.write_to_file(in_string.format(i,K,0,0,1))
-                write_flag = False
-            elif write_flag:
+            rand_state = random.randint(0,1000) % mod_val
+            if rand_state == 0:
                 fp.write_to_file(in_string.format(i,K,0,0,1))
             else:
                 fp.write_to_file(in_string.format(i,0,0,0,0))
-            pass
-        #start writing anis.txt
+            continue
     return
 
-def gen_r_pos(xsize, ysize):
+def gen_r_pos(x_size, y_size):
     with file_parser.Parse_File('r_pos.txt') as fp:
         fp.delete_contents()
-        fp.write_to_file('basis\n{:d}\n'.format(xsize*ysize))
-        for i in range(xsize):
-            for j in range(ysize):
-                fp.write_to_file(str(i/float(xsize))+' '+str(j/float(ysize))+' 0\n')
+        fp.write_to_file('basis\n{:d}\n'.format(x_size*y_size))
+        for i in range(x_size):
+            for j in range(y_size):
+                fp.write_to_file(str(i/float(x_size))+' '+str(j/float(y_size))+' 0\n')
                 pass
         pass
     return
 """
-def update_config(xsize, ysize):
+def update_config(x_size, y_size):
     with file_parser.Parse_File('boundary.cfg') as fp:
         start_line = fp.find_line_number('basis')
 """
