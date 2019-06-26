@@ -32,7 +32,7 @@ And then you should be good to go with spirit.
 
 # Using spirit sandbox
 
-Spirit sanbox is currently set up to perform an experiment
+Spirit sandbox is currently set up to perform an experiment
 where a DMI interface with applied current generates a skyrmion-antiskyrmion
 pair on either side of the interface.
 
