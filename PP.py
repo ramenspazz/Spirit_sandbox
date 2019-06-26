@@ -46,9 +46,10 @@ def main():
 				#update bravis vector
 				with file_parser.Parse_File('gen_config.txt') as fp:
 					line_num = fp.find_line_number('bravais_vectors')
-					fp.write_to_file('bravais_vectors\n{:d} 0 0\n0 {:d} 0\n0 0 1\n\n'.format(x_size,y_size), line_num)
-					#fp.set_config_var('n_basis_cells', '{:d} {:d} 1\n'.format(x_size,y_size))
-					pass
+					fp.write_to_file('bravais_vectors\n', line_num)
+					fp.write_to_file('{:d} 0 0\n'.format(x_size))
+					fp.write_to_file('0 {:d} 0\n'.format(y_size))
+					fp.write_to_file('0 0 1\n')
 
 				generate_configs.gen_r_pos(x_size,y_size)
 
