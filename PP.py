@@ -32,22 +32,52 @@ def main():
 		J = 18.16
 		DMI = 1.87
 		Dij = []
+		start_point = [0,0]
+		end_point = [0,0]
 		
 		read_config = int(raw_input('read in a config file?(0/1): '))
 		if read_config:
 			config_fname = raw_input('enter config your_file_name.txt: ')
-			in_var = int(raw_input('Generate new r_pos and h file (0/1)?: '))
+			in_var = int(raw_input('Generate new r_pos, h, and anisotropy file (0/1)?: '))
 			if in_var == 1:
 				x_size = int(raw_input('x lattice size: '))
 				y_size = int(raw_input('y lattice size: '))
+
 				#update bravis vector
 				with file_parser.Parse_File('gen_config.txt') as fp:
 					line_num = fp.find_line_number('bravais_vectors')
-					fp.write_to_file('bravais_vectors\n{:d} 0 0\n0 {:d} 0\n0 0 1\n\n'.format(x_size,y_size), line_num)
-					#fp.set_config_var('n_basis_cells', '{:d} {:d} 1\n'.format(x_size,y_size))
-					pass
+					fp.write_to_file('bravais_vectors\n', line_num)
+					fp.write_to_file('{:d} 0 0\n'.format(x_size))
+					fp.write_to_file('0 {:d} 0\n'.format(y_size))
+					fp.write_to_file('0 0 1\n')
+
 				generate_configs.gen_r_pos(x_size,y_size)
-				generate_configs.gen_h_file(x_size,y_size, J, DMI)
+
+				in_var = int(raw_input('Use a custom DMI (0/1)?: '))
+				if in_var == 1:
+					generate_configs.gen_h_file(x_size,y_size, J, DMI)
+					with file_parser.Parse_File('gen_config.txt') as fp:
+						fp.set_config_var('interaction_pairs_file', 'h.txt\n')
+				else:
+					with file_parser.Parse_File('gen_config.txt') as fp:
+						fp.set_config_var('interaction_pairs_file', '.\n')
+
+				in_var = int(raw_input('Use a custom anis (0/1)?: '))
+				if in_var == 1:
+					in_var = int(raw_input('Use random or pattern generated anisotropy (0/1)?: '))
+					if in_var == 1:
+						pattern = raw_input('Enter math expression here in terms of x\nEnter an integer for a box: ')
+						width = int(raw_input('Enter width of pattern: '))
+						generate_configs.gen_anis_pattern(x_size,y_size, pattern, width, 0.9)
+					elif in_var == 0:
+						mod_val = int(raw_input('Enter modulo value: '))
+						generate_configs.gen_anis_random(x_size,y_size, mod_val, 0.9)
+					with file_parser.Parse_File('gen_config.txt') as fp:
+						fp.set_config_var('anisotropy_file', 'anisotropy.txt\n')
+				else:
+					with file_parser.Parse_File('gen_config.txt') as fp:
+						fp.set_config_var('anisotropy_file', '.\n')
+				
 				file_parser.concatenate_files('gen_config.txt', 'r_pos.txt', config_fname)
 
 		alphaD = float(raw_input('enter alpha: ')) # Damping
@@ -63,7 +93,7 @@ def main():
 		
 		Slvr = int(raw_input('enter solver num(1-4):'))
 		
-		with state.State(configfile=config_fname, quiet=False) as i_state:
+		with state.State(configfile=config_fname, quiet=True) as i_state:
 			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
 
 		in_var = 1

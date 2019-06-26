@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+from matplotlib.colors import LinearSegmentedColormap
 
 def Plot_Lattice(f_name, n_cols, n_rows):
 	###===============================================###
@@ -35,6 +36,8 @@ def Plot_Lattice(f_name, n_cols, n_rows):
 				M[count / n_cols][count % n_cols] = (temp[2]+1)/2
 				count += 1
 				continue
-		q = plt.quiver(U, V, M, units='xy', angles='xy', pivot='middle', width=0.2, scale=1.5)
+		
+		#mycmap = LinearSegmentedColormap.from_list('mycmap', ['red', 'blue', 'green'])
+		q = plt.quiver(U, V, M, cmap='plasma', units='xy', angles='xy', pivot='middle', width=0.25, scale=1.5)
 		plt.show()
 	return

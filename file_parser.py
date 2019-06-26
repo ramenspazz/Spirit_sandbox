@@ -27,35 +27,36 @@ class Parse_File:
     # TODO : start search from specific location in file
     def find_line_number(self, var):
         try:
+            (self.fp).seek(0,2)
+            endloc = (self.fp).tell()
             (self.fp).seek(0)
             prev_len = 0
+            #this loop reads lines and updates the file pointer
+            #location each iteration until the desired text
+            #is reached. Overshoots one line, so subtract off
+		    #the length of the final line reached in this loop
+	    	#after loop
             while True:
-                #this loop reads lines and updates the file pointer
-                #location each iteration until the desired text
-                #is reached. Overshoots one line, so subtract off
-		#the length of the final line reached in this loop
-		#after loop
                 prev = self.fp.readline()
                 if var in prev:
                     prev_len = len(prev)
                     break
-		elif prev == None:
-			print('EOF reached!!\n\n')
-			return(-1)
-                continue
+                elif (prev == '') and ((self.fp).tell() == endloc):
+                    print('EOF reached!!\n\n')
+                    return(-1)
             #backtrack one line by length of desired text -> go up one line
             ln_num = self.fp.tell() - prev_len
+            return(ln_num)
         except IOError:
             print('File error!\n\n\n')
             return(-1)
-        return(ln_num)
 
     #set the variable name var in file to value val
     def set_config_var(self, var, val):
         try:
 	#seek to the file location passed and overwrite line with {var} {val}\n
             (self.fp).seek(self.find_line_number(var))
-            (self.fp).write(var + ' ' + val + '\n')
+            (self.fp).write('{:s} {:s}'.format(var, val))
             pass
         except IOError:
             print('File error!\n\n\n')
@@ -109,7 +110,7 @@ def list_keyword_and_edit(f_name):
             if user_in == 'q':
                 break
             line_num = int(user_in)
-            if (line_num > len(editlist)) or (line_num <= 0):#check that entered line number is valid and non negative
+            if line_num > len(editlist):
                 print('Out of range of list! Enter proper index.\n')
                 continue
             user_in = raw_input(editlist[line_num - 1][1] + '\nReplace with?:\n')
