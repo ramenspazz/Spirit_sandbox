@@ -34,7 +34,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
     parameters.llg.set_output_configuration(i_state,True,True,4)
     hamiltonian.set_field(i_state,hval,hdir)
     parameters.llg.set_stt(i_state,True,0,STTdir)
-    hamiltonian.set_anisotropy(i_state,K,Kdir)
+    #hamiltonian.set_anisotropy(i_state,K,Kdir)
     parameters.llg.set_timestep(i_state, tS)
     parameters.llg.set_iterations(i_state,1,1)
 
@@ -56,6 +56,9 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
         configuration.minus_z(i_state)
         pass
 
+    #start creating disorder here
+    
+
     print('Done!\n')
     io.chain_write(i_state,"start.ovf")
     print('Wrote start.ovf\n')
@@ -74,7 +77,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
             parameters.llg.set_output_configuration(i_state,True,True,4)
             hamiltonian.set_field(i_state,hval,hdir)
             parameters.llg.set_stt(i_state,True,0,STTdir)
-            hamiltonian.set_anisotropy(i_state,K,Kdir)
+            #hamiltonian.set_anisotropy(i_state,K,Kdir)
             parameters.llg.set_timestep(i_state, tS)
             parameters.llg.set_direct_minimization(i_state, use_minimization=True)
             #minimize
@@ -111,7 +114,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
         parameters.llg.set_output_configuration(i_state,True,True,4)
         hamiltonian.set_field(i_state,hval,hdir)
         parameters.llg.set_stt(i_state,True,0,STTdir)
-        hamiltonian.set_anisotropy(i_state,K,Kdir)
+        #hamiltonian.set_anisotropy(i_state,K,Kdir)
         parameters.llg.set_timestep(i_state, tS)
 
         print('Running simulation...\n')
@@ -123,7 +126,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD
             while counter < 10:
                 if (counter == 0) and (usr_in == 1):
                     io.chain_read(i_state,"min.ovf")
-                elif (counter == 0) and (usr_in == 0):
+                elif (counter == 0) and (usr_in == -1):
                     io.chain_read(i_state,"start.ovf")
                 else:
                     io.chain_read(i_state,"grad_{:d}.ovf".format(counter - 1))
