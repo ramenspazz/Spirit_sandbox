@@ -15,14 +15,14 @@ def gen_h_file(xsize, ysize, J, D):
         
         for i in range(xsize*ysize):
             d = int(math.pow(-1,math.floor((i+1)/ysize)+1))
-            fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,d,0,0))
+            fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
             pass
 
         for j in range(xsize*(ysize-1)):
-            fp.write_to_file(in_string.format(j,j+xsize,0,0,0,J,D,0,-1,0))
+            fp.write_to_file(in_string.format(j,j+xsize,0,0,0,J,D,-1,0,0))
             pass
 
-def gen_anis_pattern(x_size, y_size, pattern, K_mag = None):
+def gen_anis_pattern(x_size, y_size, pattern, width, K_mag = None):
     with file_parser.Parse_File('anisotropy.txt') as fp:
         print('generating pattern...\n')
         fp.delete_contents()
@@ -35,17 +35,22 @@ def gen_anis_pattern(x_size, y_size, pattern, K_mag = None):
             K = 1
         fp.write_to_file(header_string)
 
-        expr = sy.sympify(pattern)
-        f = sy.utilities.lambdify('x', expr, "numpy")
-        expr_in = np.arange(-10,11)
-        expr_output = -1 * f(expr_in) + x_size/2
+        expr_in = np.arange(-width/2,width/2 + 1)
+        if sy.sympify(pattern).is_integer:
+            print('Int type detected!\n')
+            expr_output = [x_size/2 - int(pattern)] * width
+            mirror_element = [x_size/2 + int(pattern)] * width
+            print(expr_output)
+        else:
+            expr = sy.sympify(pattern)
+            f = sy.utilities.lambdify('x', expr, "numpy")
+            expr_output = x_size/2 - f(expr_in)
+            mirror_element = x_size/2 + f(expr_in)
         write_flag = False
         skip_flag = False
-        mirror_element = x_size/2 + f(expr_in)
         mirror_index = 0
         prev_line_y = 1
-        print(expr_output)
-        print(mirror_element)
+
         for i in range(x_size*y_size):
             cur_pos = [i % x_size + 1, int(i / x_size) + 1] #update current position each itteration in loop. x y
             if prev_line_y < cur_pos[1]:
@@ -67,7 +72,7 @@ def gen_anis_pattern(x_size, y_size, pattern, K_mag = None):
                     elif (cur_pos[0] == x_size/2) and (cur_pos[0] == math.floor(element)):
                         skip_flag = True
                         prev_line_y = cur_pos[1]
-                        fp.write_to_file(in_string.format(i,K,0,0,1))
+                        #fp.write_to_file(in_string.format(i,K,0,0,1))
                         break
                 if write_flag:
                     continue

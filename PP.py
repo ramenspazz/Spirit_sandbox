@@ -63,18 +63,9 @@ def main():
 
 				in_var = int(raw_input('Use a custom anis (0/1)?: '))
 				if in_var == 1:
-					in_var = int(raw_input('Use pattern (0/1)?: '))
-
-					if in_var == 1:
-						pattern = raw_input('Enter math expression here in terms of x: ')
-						generate_configs.gen_anis_pattern(x_size,y_size, pattern, 0.9)
-					else:
-						for i in range(len(start_point)):
-							start_point[i] = float(raw_input('Enter element {:d} for row-col of start: '.format(i)))
-						for i in range(len(end_point)):
-							end_point[i] = float(raw_input('Enter element {:d} for row-col of end: '.format(i)))
-						generate_configs.gen_anis_file(x_size, y_size, start_point, end_point, -10)
-
+					pattern = raw_input('Enter math expression here in terms of x\nEnter an integer for a box: ')
+					width = int(raw_input('Enter width of pattern: '))
+					generate_configs.gen_anis_pattern(x_size,y_size, pattern, width, 0.9)
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('anisotropy_file', 'anisotropy.txt\n')
 				else:
