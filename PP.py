@@ -10,6 +10,7 @@ from spirit import simulation, state, system
 #scientific data processing
 import numpy as np
 from scipy import special
+import math
 #custom scripts
 import plot_out
 import sim_script
@@ -27,13 +28,11 @@ def main():
 		Mtd = 1
 		convThr = 1.00e-12 # Convergence condition
 		tS = 0.001 # LLG time step
-		K =  0.0  # Anisotropy
+		k_val =  0.0  # Anisotropy
 		Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
-		J = 18.16
+		Exchange = 18.16
 		DMI = 1.87
 		Dij = []
-		start_point = [0,0]
-		end_point = [0,0]
 		
 		read_config = int(raw_input('read in a config file?(0/1): '))
 		if read_config:
@@ -55,7 +54,8 @@ def main():
 
 				in_var = int(raw_input('Use a custom DMI (0/1)?: '))
 				if in_var == 1:
-					generate_configs.gen_h_file(x_size,y_size, J, DMI)
+					DMI = float(raw_input('Enter value for DMI: '))
+					generate_configs.gen_h_file(x_size,y_size, Exchange, DMI)
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('interaction_pairs_file', 'h.txt\n')
 				else:
@@ -68,10 +68,14 @@ def main():
 					if in_var == 1:
 						pattern = raw_input('Enter math expression here in terms of x\nEnter an integer for a box: ')
 						width = int(raw_input('Enter width of pattern: '))
+						k_val = float(raw_input('Enter K value: '))
 						generate_configs.gen_anis_pattern(x_size,y_size, pattern, width, 0.9)
 					elif in_var == 0:
-						mod_val = int(raw_input('Enter modulo value: '))
-						generate_configs.gen_anis_random(x_size,y_size, mod_val, 0.9)
+						k_val = float(raw_input('Enter value for K: '))
+						#convert K
+						k_val = k_val * DMI**2 * math.pow(10,-6) / (8*Exchange)
+						sigma = float(raw_input('Enter value for sigma: '))
+						generate_configs.gen_anis_random(x_size,y_size, k_val, sigma)
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('anisotropy_file', 'anisotropy.txt\n')
 				else:
@@ -91,11 +95,10 @@ def main():
 			x_size = int(raw_input('x lattice size: '))
    			y_size = int(raw_input('y lattice size: '))
 		
-		Slvr = int(raw_input('enter solver num(1-4):'))
+		Slvr = int(raw_input('enter solver num(1-4): '))
 		
 		with state.State(configfile=config_fname, quiet=True) as i_state:
-			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, J, DMI, Dij, alphaD, x_size, y_size, read_config)
-
+			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, k_val, Kdir, Exchange, DMI, Dij, alphaD, x_size, y_size, read_config)
 		in_var = 1
 		while in_var == 1:
 			in_var = int(raw_input("-1 to exit program, 0 to exit plotting, 1 to plot."))
