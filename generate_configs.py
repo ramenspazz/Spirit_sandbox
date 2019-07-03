@@ -88,7 +88,7 @@ def gen_anis_pattern(x_size, y_size, pattern, width, K_mag = None):
     return
 
 
-def gen_anis_random(x_size, y_size, mod_val, K_mag = None):
+def gen_anis_random(x_size, y_size, K_mag = None, sigma = None):
     with file_parser.Parse_File('anisotropy.txt') as fp:
         print('generating pattern...\n')
         fp.delete_contents()
@@ -99,15 +99,14 @@ def gen_anis_random(x_size, y_size, mod_val, K_mag = None):
             K = K_mag
         else:
             K = 1
+        if sigma != None:
+            S = sigma
+        else:
+            S = 1
         fp.write_to_file(header_string)
 
         for i in range(x_size*y_size):
-            rand_state = random.randint(0,1000) % mod_val
-            if rand_state == 0:
-                fp.write_to_file(in_string.format(i,K,0,0,1))
-            else:
-                fp.write_to_file(in_string.format(i,0,0,0,0))
-            continue
+            fp.write_to_file(in_string.format(i,random.gauss(K, S),0,0,1))
     return
 
 def gen_r_pos(x_size, y_size):
