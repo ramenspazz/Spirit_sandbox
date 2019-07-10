@@ -21,15 +21,15 @@ class Parse_File:
         return self
     #destructor for with statement, closes file at end of with block
     def __exit__(self, exc_type, exc_value, traceback):
-        self.fp.close()
+        (self.fp).close()
 
     # returns the line number of the first instance of var found
     # TODO : start search from specific location in file
-    def find_line_number(self, var):
+    def find_line_number(self, var, nextline = None):
         try:
-            (self.fp).seek(0,2)
+            endloc = (self.fp).seek(0,2)
             endloc = (self.fp).tell()
-            (self.fp).seek(0)
+            (self.fp).seek(0,0)
             prev_len = 0
             #this loop reads lines and updates the file pointer
             #location each iteration until the desired text
@@ -37,16 +37,42 @@ class Parse_File:
 		    #the length of the final line reached in this loop
 	    	#after loop
             while True:
-                prev = self.fp.readline()
+                prev = (self.fp).readline()
                 if var in prev:
                     prev_len = len(prev)
                     break
-                elif (prev == '') and ((self.fp).tell() == endloc):
+                elif (self.fp).tell() == endloc:
                     print('EOF reached!!\n\n')
                     return(-1)
             #backtrack one line by length of desired text -> go up one line
-            ln_num = self.fp.tell() - prev_len
+            if not nextline:
+                ln_num = (self.fp).tell() - prev_len
+            else:
+                ln_num = (self.fp).tell()
             return(ln_num)
+        except IOError as whatis:
+            print('File error!\n\n\n')
+            print(whatis)
+            return(-2)
+
+    def file_readline(self, ln = None, searchterm = None, nextline = None):
+        try:
+            #(self.fp).seek(0)
+            if ln:
+                (self.fp).seek(ln)
+            elif searchterm:
+                ln = self.find_line_number(searchterm, nextline)
+                (self.fp).seek(ln)
+            outstring = (self.fp).readline()
+            return(outstring)
+        except IOError:
+            print('File error!\n\n\n')
+            return(-1)
+
+    def file_seek(self, loc):
+        try:
+            (self.fp).seek(loc)
+            return
         except IOError:
             print('File error!\n\n\n')
             return(-1)

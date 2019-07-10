@@ -37,7 +37,7 @@ def Plot_Lattice(f_name, n_cols, n_rows):
 				count += 1
 				continue
 		
-		#mycmap = LinearSegmentedColormap.from_list('mycmap', ['red', 'blue', 'green'])
+		#mycmap = LinearSegmentedColormap.from_list('mycmap', ['blue', 'white', 'red'])
 		q = plt.quiver(U, V, M, cmap='plasma', units='xy', angles='xy', pivot='middle', width=0.25, scale=1.5)
 		plt.show()
 	return
