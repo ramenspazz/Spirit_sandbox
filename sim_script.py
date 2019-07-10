@@ -13,11 +13,14 @@ from spirit import simulation, state, system
 def convert_from_dimcord_j(DMI, Exchange, J_param, H_param):
     #e = float(1.602176634*math.pow(10,-19))
     #h_bar = float(1.054571800*math.pow(10,-34))
-    Amp_scale = float(4.8682687)*float(math.pow(10,-7))
-    current = float(J_param) * DMI * Amp_scale
+
+    Bhor_magneton = float(5.7883809)*float(math.pow(10,-5)) # 5.7883809e-05/A*m^2
+    Amp_scale = float(4.8682687)*float(math.pow(10,-7)) # 2e*eV10^(-3)/h_bar -> 4.87e-07A for current scale
+
+    current = float(J_param) * float(DMI) * Amp_scale
 
     H_field = float(H_param) * math.pow(DMI,2) / float(4*Exchange)
-    Bhor_magneton = float(5.7883809)*float(math.pow(10,-5))
+
     H_field = H_field / Bhor_magneton
 
     return([current,H_field])

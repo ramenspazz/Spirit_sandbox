@@ -20,19 +20,19 @@ import generate_configs
 def main():
 	in_var = 0
 	config_fname = ''
-
+	#initial parameters
+	x_size = 0
+	y_size = 0
+	Mtd = 1
+	convThr = 1.00e-12 # Convergence condition
+	tS = 0.001 # LLG time step
+	k_val =  0.0  # Anisotropy
+	Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
+	Exchange = 18.16
+	DMI = 1.87
+	Dij = []
+	print('Welcome to spirit sandbox.\n')
 	while in_var != -1:
-		#initial parameters
-		x_size = 0
-		y_size = 0
-		Mtd = 1
-		convThr = 1.00e-12 # Convergence condition
-		tS = 0.001 # LLG time step
-		k_val =  0.0  # Anisotropy
-		Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
-		Exchange = 18.16
-		DMI = 1.87
-		Dij = []
 		
 		read_config = int(raw_input('read in a config file?(0/1): '))
 		if read_config:
@@ -51,7 +51,7 @@ def main():
 					fp.write_to_file('0 0 1\n')
 
 				generate_configs.gen_r_pos(x_size,y_size)
-
+				
 				in_var = int(raw_input('Use a custom DMI (0/1)?: '))
 				if in_var == 1:
 					DMI = float(raw_input('Enter value for DMI: '))

@@ -15,7 +15,7 @@ def gen_h_file(x_size, y_size, J, D):
         fp.write_to_file('{:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}\n'.format('i','j','da','db','dc','Jij','Dij','Dija','Dijb','Dijc'))
         
         for i in range(x_size*y_size):
-            d = int(math.pow(-1,math.floor((i+1)/y_size)+1))
+            d = int(math.pow(-1,math.floor(i/y_size)+1))
             fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
             pass
 
