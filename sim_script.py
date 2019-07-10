@@ -10,22 +10,28 @@ from spirit import hamiltonian, geometry, io
 from spirit import parameters, quantities
 from spirit import simulation, state, system
 
-def convert_from_dimcord_j(DMI, Exchange, J_param, H_param):
+def collect_input(val_type, prompt):
+	while True:	
+		try:
+			val = raw_input(prompt)
+			return(val_type(val))
+		except ValueError:
+			print('Invalid input!\n')
+			continue
+
+def convert_from_dimcord_j(DMI, Exchange, J_param, H_param, x, y, lc):
     #e = float(1.602176634*math.pow(10,-19))
     #h_bar = float(1.054571800*math.pow(10,-34))
+    #Bohr_magneton = float(5.7883809)*float(math.pow(10,-5)) # 5.7883809e-05/A*m^2
+    Amp_scale = float(3.038534338)*float(math.pow(10,13)) # 2e*(joule/metre^2)/h_bar -> 4.87e-07A for current scale
 
-    Bhor_magneton = float(5.7883809)*float(math.pow(10,-5)) # 5.7883809e-05/A*m^2
-    Amp_scale = float(4.8682687)*float(math.pow(10,-7)) # 2e*eV10^(-3)/h_bar -> 4.87e-07A for current scale
+    current = float(J_param) * float(DMI) * Amp_scale * lc**2 * 1e-18
 
-    current = float(J_param) * float(DMI) * Amp_scale
-
-    H_field = float(H_param) * math.pow(DMI,2) / float(4*Exchange)
-
-    H_field = H_field / Bhor_magneton
+    H_field = float(H_param) * math.pow(DMI,2) / float(5.8e+5 * 2 * Exchange)
 
     return([current,H_field])
 
-def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij, alphaD, x_size, y_size, read_config):
+def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij, alphaD, x_size, y_size, read_config, lc):
     Skyrmion_size = 0
     calc_iter = 0
     js = 1e-7 # current value
@@ -35,16 +41,16 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     sim_count = 0 
     load_fname = 'start.ovf'
     
-    usr_in = int(raw_input('Load state (0/1)?: '))
+    usr_in = collect_input(int, 'Load state (0/1)?: ')
     if usr_in == 1:
-        load_fname = raw_input('Enter filename to load: ')
+        load_fname = collect_input(str, 'Enter filename to load: ')
         print('\nLoading {:s}...\n'.format(load_fname))
         io.chain_read(i_state,load_fname)
         print('Done!\n')
     elif usr_in == 0:
-        usr_in = int(raw_input('Set state None, Random, skyrmion, or minus-z (0/1/2/3): '))
+        usr_in = collect_input(int, 'Set state None, Random, skyrmion, or minus-z (0/1/2/3): ')
         if usr_in == 2:
-            Skyrmion_size = input("Enter Skyrmion size: ")
+            Skyrmion_size = collect_input(int, "Enter Skyrmion size: ")
 
         #initialize initial conditions of simulation
         #hamiltonian.set_anisotropy(i_state,K,Kdir)
@@ -87,12 +93,12 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     sim_count = 0
     usr_in = 0
     while usr_in != -1:
-        usr_in = int(raw_input('preform minimization?(-1/1): '))
+        usr_in = collect_input(int, 'preform minimization?(-1/1): ')
         if usr_in == 1:
-            calc_iter = int(raw_input("set num itterations to minimize: "))
-            hval = float(raw_input("enter H field strength: ")) # magnetic Field direction
+            calc_iter = collect_input(int, 'set num itterations to minimize: ')
+            hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
             js = 0
-            hval = convert_from_dimcord_j(DMI,Exchange,0, hval)[1]
+            hval = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)[1]
 
             print('H = {:f}T'.format(hval))
 
@@ -109,11 +115,13 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             print('Minimizing\n')
             parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
             simulation.start(i_state,Mtd,0)
+            cur_fname = 
             if os.path.isfile("min_{:d}.ovf".format(sim_count)):
                 os.remove("min_{:d}.ovf".format(sim_count))
                 pass
             io.chain_write(i_state,"min_{:d}.ovf".format(sim_count))
             simulation.stop_all
+            plot_out.Plot_Lattice(cur_fname, x_size, y_size)
             print('Done!\n')
             sim_count += 1
         continue
@@ -121,20 +129,18 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     last_sim_count = sim_count
     sim_count = 0
     while calc_iter != -1:  
-        calc_iter = int(raw_input("set num itterations to run, -1 to quit: "))
-
+        calc_iter = collect_input(int, 'set num itterations to run, -1 to quit: ')
         if calc_iter == -1:
             #return to top of loop and exit
             continue
-
-        hval = float(raw_input("enter H field strength: ")) # magnetic Field direction
-        js = float(raw_input("enter current val: ")) # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
-        temp = convert_from_dimcord_j(DMI, Exchange, js, hval)
+        hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
+        js = collect_input(float,'enter current val: ') # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
+        temp = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)
         js = temp[0]
         hval = temp[1]
-        print('H = {:9f}T\nJ = {:9f}e-07A\n'.format(hval, js*math.pow(10,7)))
+        print('H = {:9f}T\nJ = {:12f}A\n'.format(hval, js))
         for i in range(len(STTdir)):
-            STTdir[i] = float(raw_input('input Polerization element: '))
+            STTdir[i] = collect_input(float, 'input Polerization element {:d}: '.format(i+1))
 
         parameters.llg.set_stt(i_state,True,js,STTdir)
         parameters.llg.set_temperature(i_state,0.0)

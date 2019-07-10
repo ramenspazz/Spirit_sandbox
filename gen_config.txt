@@ -1,4 +1,12 @@
-### Output Folders
+#other constants per run
+
+
+
+#DMI 0.01000 
+#EXCHANGE 0.00000000001500000
+
+
+
 output_file_tag   boundary
 log_output_folder  .
 llg_output_folder  .
@@ -16,7 +24,7 @@ llg_beta 0.5
 hamiltonian                heisenberg_pairs
 
 ### Boundary_conditions (a b c): 0(open), 1(periodical)
-boundary_conditions        1 1 0
+boundary_conditions        0 0 0
 
 ################ End Hamiltonian #################
 
@@ -24,7 +32,7 @@ boundary_conditions        1 1 0
 
 ### The bravais lattice type
 bravais_lattice sc
-lattice_constant 6
+lattice_constant 10
 
 bravais_vectors
 100 0 0
@@ -33,7 +41,7 @@ bravais_vectors
 
 n_basis_cells 1 1 1
 
-mu_s 1.46
+mu_s 1.0
 
 anisotropy_file anisotropy.txt
 

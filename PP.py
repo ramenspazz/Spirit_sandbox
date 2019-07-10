@@ -17,6 +17,22 @@ import sim_script
 import file_parser
 import generate_configs
 
+def is_number(num):
+    try:
+        float(num)
+        return(True)
+    except ValueError:
+        return(False)
+
+def collect_input(val_type, prompt):
+	while True:	
+		try:
+			val = raw_input(prompt)
+			return(val_type(val))
+		except ValueError:
+			print('Invalid input!\n')
+			continue
+
 def main():
 	in_var = 0
 	config_fname = ''
@@ -25,23 +41,32 @@ def main():
 	y_size = 0
 	Mtd = 1
 	convThr = 1.00e-12 # Convergence condition
-	tS = 0.001 # LLG time step
+	tS = 1e-06 # LLG time step
 	k_val =  0.0  # Anisotropy
 	Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
-	Exchange = 18.16
-	DMI = 1.87
+	Exchange_mm = 18.16
+	DMI_mm = 1.87
 	Dij = []
-	print('Welcome to spirit sandbox.\n')
-	while in_var != -1:
-		
-		read_config = int(raw_input('read in a config file?(0/1): '))
-		if read_config:
-			config_fname = raw_input('enter config your_file_name.txt: ')
-			in_var = int(raw_input('Generate new r_pos, h, and anisotropy file (0/1)?: '))
-			if in_var == 1:
-				x_size = int(raw_input('x lattice size: '))
-				y_size = int(raw_input('y lattice size: '))
+	lc = 6
+	symmetry = 4
 
+	#float(DMI_mm * (lc / 10) * 1.602e+04) / float(symmetry)
+	#float(Exchange_mm * (lc / 10) * 1.602e+13) / float(2 * symmetry)
+	#k_val * DMI_mm**2 / (4 * Exchange_mm)
+	print('Welcome to spirit sandbox.\n')
+
+	while in_var != -1:
+		read_config = collect_input(int, 'read in a config file?(0/1): ')
+		if read_config == 1:
+			config_fname = raw_input('enter config your_file_name.txt: ')
+			in_var = collect_input(int, 'Generate new r_pos, h, and anisotropy file (0/1)?: ')
+			if in_var == 1:
+				x_size = collect_input(int, 'x lattice size: ')
+				y_size = collect_input(int, 'y lattice size: ')
+				#set lattice constant
+				with file_parser.Parse_File('gen_config.txt') as fp:
+					lc = fp.file_readline(None, 'lattice_constant')
+					lc = int(lc.split()[1])
 				#update bravis vector
 				with file_parser.Parse_File('gen_config.txt') as fp:
 					line_num = fp.find_line_number('bravais_vectors')
@@ -52,30 +77,42 @@ def main():
 
 				generate_configs.gen_r_pos(x_size,y_size)
 				
-				in_var = int(raw_input('Use a custom DMI (0/1)?: '))
+				in_var = collect_input(int, 'Use a custom DMI (0/1)?: ')
 				if in_var == 1:
-					DMI = float(raw_input('Enter value for DMI: '))
-					generate_configs.gen_h_file(x_size,y_size, Exchange, DMI)
+					DMI_mm = collect_input(float, 'Enter value for DMI: ')
+					DMI_atom = float(DMI_mm * (lc / 10) * 1.602e+04) / float(symmetry)
+					Exchange_mm = collect_input(float, 'Enter value for Exchange: ')
+					Exchange_atom = float(Exchange_mm * (lc / 10) * 1.602e+13) / float(2 * symmetry)
+					print('DMI = {:5f}\nExchange = {:9.8f}'.format(DMI_atom, Exchange_atom))
+
+					with file_parser.Parse_File('gen_config.txt') as fp:
+						fp.set_config_var('#DMI', '{:<8.5f}\n'.format(DMI_mm))
+						fp.set_config_var('#EXCHANGE', '{:<18.17f}\n'.format(Exchange_mm))
+					generate_configs.gen_h_file(x_size,y_size, Exchange_atom, DMI_atom)
+
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('interaction_pairs_file', 'h.txt\n')
 				else:
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('interaction_pairs_file', '.\n')
 
-				in_var = int(raw_input('Use a custom anis (0/1)?: '))
+				in_var = collect_input(int, 'Use a custom anis (0/1)?: ')
+
 				if in_var == 1:
-					in_var = int(raw_input('Use random or pattern generated anisotropy (0/1)?: '))
+					in_var = collect_input(int, 'Use random or pattern generated anisotropy (0/1)?: ')
 					if in_var == 1:
 						pattern = raw_input('Enter math expression here in terms of x\nEnter an integer for a box: ')
-						width = int(raw_input('Enter width of pattern: '))
-						k_val = float(raw_input('Enter K value: '))
+						width = collect_input(int, 'Enter width of pattern: ')
+						k_val = collect_input(float, 'Enter K value: ')
 						generate_configs.gen_anis_pattern(x_size,y_size, pattern, width, 0.9)
 					elif in_var == 0:
-						k_val = float(raw_input('Enter value for K: '))
+						k_val = collect_input(float, 'Enter value for K: ')
 						#convert K
-						k_val = k_val * DMI**2 * math.pow(10,-6) / (8*Exchange)
-						sigma = float(raw_input('Enter value for sigma: '))
-						generate_configs.gen_anis_random(x_size,y_size, k_val, sigma)
+						k_val = k_val * DMI_mm**2 / (4 * Exchange_mm)
+						print('K = {:f}\n'.format(k_val))
+						sigma = collect_input(float, 'Enter value for sigma in percent of K: ')
+						generate_configs.gen_anis_random(x_size,y_size, k_val, k_val * sigma)
+
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('anisotropy_file', 'anisotropy.txt\n')
 				else:
@@ -83,29 +120,56 @@ def main():
 						fp.set_config_var('anisotropy_file', '.\n')
 				
 				file_parser.concatenate_files('gen_config.txt', 'r_pos.txt', config_fname)
+				#generate new config file
+			#read a config file
 
-		alphaD = float(raw_input('enter alpha: ')) # Damping
+			elif in_var == 0:
+				prev_vals = []
+#TODO: complete functionality
+				#Load previously used values to current values from old
+				#config file. Can be modified to add as many values as needed.
+				search = ['#DMI', '#EXCHANGE', 'lattice_constant']
+				with file_parser.Parse_File(config_fname) as fp:
+					for searchterm in search:
+						cur_line = (fp.file_readline(None, searchterm)).split()
+						prev_vals.append(float(cur_line[1]))
+# TODO: add object to assign each value in loop and not by name after loop
+					DMI_mm = prev_vals[0]
+					Exchange_mm = prev_vals[1]
+					lc = prev_vals[2]
+
+					cur_line = fp.file_readline(None, 'bravais_vectors', True)
+					cur_line = cur_line.split()
+					x_size = int(cur_line[0])
+					cur_line = fp.file_readline()
+					cur_line = cur_line.split()
+					y_size = int(cur_line[1])
+
+					print('loaded values:\nlattice size: {:f}x{:f}\nDMI_mm: {:f}\nExchange_mm: {:18.17f}\nlattice constant: {:f}\n'.format(x_size,y_size,DMI_mm,Exchange_mm,lc))
+		#if read_config == 1
+		
+		alphaD = collect_input(float, 'enter alpha: ') # Damping
 
 		if read_config:
-			betaD = float(raw_input('enter beta: '))
+			betaD = collect_input(float, 'enter beta: ')
 			with file_parser.Parse_File(config_fname) as fp:
 				fp.set_config_var('llg_beta', str(betaD))
 				pass
 		else:
-			x_size = int(raw_input('x lattice size: '))
-   			y_size = int(raw_input('y lattice size: '))
+			x_size = collect_input(int, 'x lattice size: ')
+   			y_size = collect_input(int, 'y lattice size: ')
 		
-		Slvr = int(raw_input('enter solver num(1-4): '))
+		Slvr = collect_input(int, 'enter solver num(1-4): ')
 		
 		with state.State(configfile=config_fname, quiet=True) as i_state:
-			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, k_val, Kdir, Exchange, DMI, Dij, alphaD, x_size, y_size, read_config)
+			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, k_val, Kdir, Exchange_mm, DMI_mm, Dij, alphaD, x_size, y_size, read_config, lc)
 		in_var = 1
 		while in_var == 1:
-			in_var = int(raw_input("-1 to exit program, 0 to exit plotting, 1 to plot."))
+			in_var = collect_input(int, '-1 to exit program, 0 to exit plotting, 1 to plot.')
 			if in_var == 1:
 				in_var = raw_input("enter file name to plot: ")
-				xs = int(raw_input('x = '))
-				ys = int(raw_input('y = '))
+				xs = collect_input(int, 'x = ')
+				ys = collect_input(int, 'y = ')
 				plot_out.Plot_Lattice(in_var, xs, ys)
 				in_var = 1
 	return(0)#main()
@@ -113,19 +177,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-### =====================================================================================
-#   Below is a code snippet that can be used to rotate polerization of current: currently
-#   unused
-### =====================================================================================
-
-"""
-#rot_div = input("enter number of steps required for full rotation (integer): ")
-#rot_div = 1
-#theta_step = 2*np.pi/rot_div
-for i in range(0,rot_div): # 16 total rotations in polerization direction
-#	#rotate STTdir based on itt num and step size
-#	STTdir[0] = np.cos(i*theta_step)
-#	STTdir[1] = np.sin(i*theta_step)
-	#start simulations
-"""
