@@ -55,7 +55,6 @@ def main():
 				in_var = int(raw_input('Use a custom DMI (0/1)?: '))
 				if in_var == 1:
 					DMI = float(raw_input('Enter value for DMI: '))
-					Exchange = float(raw_input('Enter value for Exchange: '))
 					generate_configs.gen_h_file(x_size,y_size, Exchange, DMI)
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('interaction_pairs_file', 'h.txt\n')
