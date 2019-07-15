@@ -33,7 +33,7 @@ def convert_from_dimcord_j(DMI, Exchange, J_param, H_param, x, y, lc):
 
 def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij, alphaD, x_size, y_size, read_config, lc):
     Skyrmion_size = 0
-    calc_iter = 0
+    calc_ittr = 0
     js = 1e-7 # current value
     STTdir = [1, 0, 0] # polarization direction
     hdir = [0.0, 0.0, 1.0] # magnetic Field direction
@@ -95,7 +95,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     while usr_in != -1:
         usr_in = collect_input(int, 'preform minimization?(-1/1): ')
         if usr_in == 1:
-            calc_iter = collect_input(int, 'set num itterations to minimize: ')
+            calc_ittr = collect_input(int, 'set num itterations to minimize: ')
             hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
             js = 0
             hval = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)[1]
@@ -113,13 +113,13 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             parameters.llg.set_direct_minimization(i_state, use_minimization=True)
             #minimize
             print('Minimizing\n')
-            parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
+            parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
             simulation.start(i_state,Mtd,0)
-            cur_fname = 
-            if os.path.isfile("min_{:d}.ovf".format(sim_count)):
-                os.remove("min_{:d}.ovf".format(sim_count))
+            cur_fname = 'min_{:d}.ovf'.format(sim_count)
+            if os.path.isfile(cur_fname):
+                os.remove(cur_fname)
                 pass
-            io.chain_write(i_state,"min_{:d}.ovf".format(sim_count))
+            io.chain_write(i_state,cur_fname)
             simulation.stop_all
             plot_out.Plot_Lattice(cur_fname, x_size, y_size)
             print('Done!\n')
@@ -128,19 +128,28 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
 
     last_sim_count = sim_count
     sim_count = 0
-    while calc_iter != -1:  
-        calc_iter = collect_input(int, 'set num itterations to run, -1 to quit: ')
-        if calc_iter == -1:
+    prev_ittr = 0
+    while calc_ittr != -1:  
+        calc_ittr = collect_input(int, 'set num itterations to run, 0 to use last used values, -1 to quit: ')
+        if calc_ittr == -1:
             #return to top of loop and exit
             continue
-        hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
-        js = collect_input(float,'enter current val: ') # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
-        temp = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)
-        js = temp[0]
-        hval = temp[1]
-        print('H = {:9f}T\nJ = {:12f}A\n'.format(hval, js))
-        for i in range(len(STTdir)):
-            STTdir[i] = collect_input(float, 'input Polerization element {:d}: '.format(i+1))
+        elif calc_ittr == 0:
+            if sim_count == 0:
+                print('Run one simulation first!\n')
+                continue
+            calc_ittr = prev_ittr
+            print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d}'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],prev_ittr))
+        else:
+            prev_ittr = calc_ittr
+            hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
+            js = collect_input(float,'enter current val: ') # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
+            temp = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)
+            js = temp[0]
+            hval = temp[1]
+            for i in range(len(STTdir)):
+                STTdir[i] = collect_input(float, 'input Polerization element {:d}: '.format(i+1))
+            print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d}'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],calc_ittr))
 
         parameters.llg.set_stt(i_state,True,js,STTdir)
         parameters.llg.set_temperature(i_state,0.0)
@@ -152,8 +161,8 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
 
         print('Running simulation...\n')
 
-        if not read_config:#no config loaded, running sandbox
-            itt_num = int(calc_iter / 10)
+        if not read_config:#no config loaded
+            itt_num = int(calc_ittr / 10)
             parameters.llg.set_iterations(i_state,itt_num,itt_num)
             counter = 0
             while counter < 10:
@@ -179,7 +188,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                 io.chain_read(i_state, prev_fname)
                 pass
             cur_fname = 'r_{:d}.ovf'.format(sim_count)
-            parameters.llg.set_iterations(i_state,calc_iter,calc_iter)
+            parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
             if os.path.isfile(cur_fname):
                     os.remove(cur_fname)
                     pass

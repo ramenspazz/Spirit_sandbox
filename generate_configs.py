@@ -7,6 +7,14 @@ import random
 import math
 import os
 
+def is_number(num):
+    try:
+        float(num)
+        return(True)
+    except ValueError:
+        return(False)
+        
+
 def gen_h_file(x_size, y_size, J, D):
     with file_parser.Parse_File('h.txt') as fp:
         fp.delete_contents()
@@ -14,8 +22,16 @@ def gen_h_file(x_size, y_size, J, D):
         in_string = '{:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6.3f}  {:<6.3f}  {:<6d}  {:<6d}  {:<6d}\n'
         fp.write_to_file('{:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}\n'.format('i','j','da','db','dc','Jij','Dij','Dija','Dijb','Dijc'))
         
+        if x_size > y_size:
+            divider = y_size
+        elif y_size > x_size:
+            divider = x_size / 2
+        else:
+            divider = x_size
+
         for i in range(x_size*y_size):
-            d = int(math.pow(-1,math.floor(i/y_size)+1))
+            #switch signs on the DMI when half of the xsize is reached
+            d = int(math.pow(-1,math.floor(i/divider)+1))
             fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
             pass
 

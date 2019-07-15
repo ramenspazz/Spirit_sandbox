@@ -50,9 +50,6 @@ def main():
 	lc = 6
 	symmetry = 4
 
-	#float(DMI_mm * (lc / 10) * 1.602e+04) / float(symmetry)
-	#float(Exchange_mm * (lc / 10) * 1.602e+13) / float(2 * symmetry)
-	#k_val * DMI_mm**2 / (4 * Exchange_mm)
 	print('Welcome to spirit sandbox.\n')
 
 	while in_var != -1:
@@ -109,6 +106,7 @@ def main():
 						k_val = collect_input(float, 'Enter value for K: ')
 						#convert K
 						k_val = k_val * DMI_mm**2 / (4 * Exchange_mm)
+						k_val = k_val * 1.6021766e-05 # J/m^3 -> meV
 						print('K = {:f}\n'.format(k_val))
 						sigma = collect_input(float, 'Enter value for sigma in percent of K: ')
 						generate_configs.gen_anis_random(x_size,y_size, k_val, k_val * sigma)
