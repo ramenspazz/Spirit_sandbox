@@ -100,8 +100,9 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             continue
         #end if startup block
 
-        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\nTODO: p to plot\nq to quit\n')
+        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\np to plot\nq to quit\n')
         print('\n')
+
         if usr_in == 'l':
             clear_screen()
             load_fname = collect_input(str, 'Enter filename to load: ')
@@ -109,6 +110,17 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             io.chain_read(i_state,load_fname)
             print('Done!\n')
         #end load block
+        elif usr_in == 'p':
+            usr_in = 1
+            while usr_in == 1:
+                usr_in = collect_input(int, '-1 to exit, 1 to plot.')
+                if usr_in == 1:
+                    usr_in = raw_input("enter file name to plot: ")
+                    xs = collect_input(int, 'x = ')
+                    ys = collect_input(int, 'y = ')
+                    plot_out.Plot_Lattice(usr_in, xs, ys)
+                    usr_in = 1
+        #end plotting block
         elif usr_in == 'm':
             clear_screen()
             sim_count = 0
@@ -152,6 +164,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             sim_count = 0
             sim_time = 0
             prev_ittr = 0
+            prev_sim_time = 0
             while True:            
                 sim_time = collect_input(int, 'set time to run in fs, 0 to use last used values, -1 to exit simulation mode: ')
                 if sim_time == -1:
@@ -161,10 +174,11 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                         print('Run one simulation first!\n')
                         continue
                     calc_ittr = prev_ittr
-                    print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d} = {:f}fs'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],int(prev_ittr),sim_time))
+                    print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d} = {:f}fs'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],int(prev_ittr),prev_sim_time))
                 else:
                     calc_ittr = int(float(sim_time) * 0.001 / tS) #n_fs * fs/(dt*ps)
                     prev_ittr = calc_ittr
+                    prev_sim_time = sim_time
                     hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
                     js = collect_input(float,'enter current val: ') # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
                     temp = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)
@@ -187,6 +201,8 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                 print('Running simulation...\n')
 
                 cur_fname = 'r_{:d}.ovf'.format(sim_count)
+                if sim_count > 0:
+                    io.chain_read(i_state, cur_fname - 1)
                 parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
                 if os.path.isfile(cur_fname):
                 #if current filename already exists within directory
