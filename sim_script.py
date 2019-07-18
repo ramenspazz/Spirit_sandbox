@@ -165,6 +165,12 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             sim_time = 0
             prev_ittr = 0
             prev_sim_time = 0
+
+            parameters.llg.set_temperature(i_state,0.0)
+            parameters.llg.set_damping(i_state, alphaD)
+            parameters.llg.set_convergence(i_state, convThr)
+            #parameters.llg.set_output_configuration(i_state,True,True,4)
+
             while True:            
                 sim_time = collect_input(int, 'set time to run in fs, 0 to use last used values, -1 to exit simulation mode: ')
                 if sim_time == -1:
@@ -191,29 +197,28 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
 
                 #setup initial parameters user for simulation
                 parameters.llg.set_stt(i_state,True,js,STTdir)
-                parameters.llg.set_temperature(i_state,0.0)
-                parameters.llg.set_damping(i_state, alphaD)
-                parameters.llg.set_convergence(i_state, convThr)
-                parameters.llg.set_output_configuration(i_state,True,True,4)
+                #parameters.llg.set_temperature(i_state,0.0)
+                #parameters.llg.set_damping(i_state, alphaD)
+                #parameters.llg.set_convergence(i_state, convThr)
+                #parameters.llg.set_output_configuration(i_state,True,True,4)
                 hamiltonian.set_field(i_state,hval,hdir)
                 parameters.llg.set_timestep(i_state, tS)
+                parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
 
                 print('Running simulation...\n')
 
                 cur_fname = 'r_{:d}.ovf'.format(sim_count)
-                if sim_count > 0:
-                    io.chain_read(i_state, cur_fname - 1)
-                parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
                 if os.path.isfile(cur_fname):
                 #if current filename already exists within directory
                 #remove it
                         os.remove(cur_fname)
-                        pass
+
                 simulation.start(i_state,Mtd,Slvr)
                 io.chain_write(i_state, cur_fname)
                 simulation.stop_all
                 plot_out.Plot_Lattice(cur_fname, x_size, y_size)
                 sim_count += 1
+
                 print('Done!')
                 continue
             #while not (sim_time == -1):    
