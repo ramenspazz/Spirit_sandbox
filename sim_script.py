@@ -10,6 +10,9 @@ from spirit import hamiltonian, geometry, io
 from spirit import parameters, quantities
 from spirit import simulation, state, system
 
+def clear_screen():
+    os.system('cls' if os.name=='nt' else 'clear')
+
 def collect_input(val_type, prompt):
 	while True:	
 		try:
@@ -40,163 +43,188 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     hval = 25
     sim_count = 0 
     load_fname = 'start.ovf'
-    
-    usr_in = collect_input(int, 'Load state (0/1)?: ')
-    if usr_in == 1:
-        load_fname = collect_input(str, 'Enter filename to load: ')
-        print('\nLoading {:s}...\n'.format(load_fname))
-        io.chain_read(i_state,load_fname)
-        print('Done!\n')
-    elif usr_in == 0:
-        usr_in = collect_input(int, 'Set state None, Random, skyrmion, or minus-z (0/1/2/3): ')
-        if usr_in == 2:
-            Skyrmion_size = collect_input(int, "Enter Skyrmion size: ")
+    startup = True
 
-        #initialize initial conditions of simulation
-        #hamiltonian.set_anisotropy(i_state,K,Kdir)
-        print('Setting up initial state...\n')
-        if not read_config:#if config file was set, dont set custom lattice size or BC
-            hamiltonian.set_dmi(i_state,1,[DMI], 1)
-            geometry.set_n_cells(i_state,[x_size, y_size, 1])
-            hamiltonian.set_boundary_conditions(i_state, [1,1,0])
-        parameters.llg.set_temperature(i_state,0.0)
-        parameters.llg.set_damping(i_state, alphaD)
-        parameters.llg.set_convergence(i_state, convThr)
-        parameters.llg.set_output_configuration(i_state,True,True,4)
-        hamiltonian.set_field(i_state,hval,hdir)
-        parameters.llg.set_stt(i_state,True,0,STTdir)
-        parameters.llg.set_timestep(i_state, tS)
-        parameters.llg.set_iterations(i_state,1,1)
+    while True:
+        clear_screen()
+        if startup: # load initial state or set up new state
+            usr_in = collect_input(int, 'Create new state or Load state (0/1)?: ')
+            if usr_in == 1:
+                load_fname = collect_input(str, 'Enter filename to load: ')
+                print('\nLoading {:s}...\n'.format(load_fname))
+                io.chain_read(i_state,load_fname)
+                print('Done!\n')
+            elif usr_in == 0:
+                usr_in = collect_input(int, 'Set state None, Random, skyrmion, or plus-z (0/1/2/3): ')
+                if usr_in == 2:
+                    Skyrmion_size = collect_input(int, "Enter Skyrmion size: ")
 
-        if usr_in == 1:
-            print('Initilizing random state...\n')
-            configuration.random(i_state) #initialize random
-            pass
-        elif usr_in == 2:
-            if not read_config:
-                configuration.plus_z(i_state) #set all spin to +z
-            print('Initilizing Skyrmion...\n')
-            configuration.skyrmion(i_state, Skyrmion_size, phase=-90) #initialize skyrmion
-            if os.path.isfile("start.ovf"):
-                os.remove("start.ovf")
-                pass
-            pass
-        elif usr_in == 3:
-            print('Setting all spins to -z...\n')
-            configuration.minus_z(i_state)
-            pass
+                #initialize initial conditions of simulation
+                #hamiltonian.set_anisotropy(i_state,K,Kdir)
+                print('Setting up initial state...\n')
+                if not read_config:#if config file was set, dont set custom lattice size or BC
+                    hamiltonian.set_dmi(i_state,1,[DMI], 1)
+                    geometry.set_n_cells(i_state,[x_size, y_size, 1])
+                    hamiltonian.set_boundary_conditions(i_state, [1,1,0])
+                parameters.llg.set_temperature(i_state,0.0)
+                parameters.llg.set_damping(i_state, alphaD)
+                parameters.llg.set_convergence(i_state, convThr)
+                parameters.llg.set_output_configuration(i_state,True,True,4)
+                hamiltonian.set_field(i_state,hval,hdir)
+                parameters.llg.set_stt(i_state,True,0,STTdir)
+                parameters.llg.set_timestep(i_state, tS)
+                parameters.llg.set_iterations(i_state,1,1)
 
-        print('Done!\n')
-        io.chain_write(i_state,"start.ovf")
-        print('Wrote start.ovf\n')
-    #end load block
-    sim_count = 0
-    usr_in = 0
-    while usr_in != -1:
-        usr_in = collect_input(int, 'preform minimization?(-1/1): ')
-        if usr_in == 1:
-            calc_ittr = collect_input(int, 'set num itterations to minimize: ')
-            hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
-            js = 0
-            hval = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)[1]
+                if usr_in == 1:
+                    print('Initilizing random state...\n')
+                    configuration.random(i_state) #initialize random
+                    pass
+                elif usr_in == 2:
+                    if not read_config:
+                        configuration.plus_z(i_state) #set all spin to +z
+                    print('Initilizing Skyrmion...\n')
+                    configuration.skyrmion(i_state, Skyrmion_size, phase=-90) #initialize skyrmion
+                    if os.path.isfile("start.ovf"):
+                        os.remove("start.ovf")
+                        pass
+                    pass
+                elif usr_in == 3:
+                    print('Setting all spins to +z...\n')
+                    configuration.plus_z(i_state)
+                    pass
+                print('Done!\n')
+                io.chain_write(i_state,"start.ovf")
+                print('Wrote start.ovf\n')
+            #end load block
+            startup = False
+            continue
+        #end if startup block
 
-            print('H = {:f}T'.format(hval))
+        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\np to plot\nq to quit\n')
+        print('\n')
+
+        if usr_in == 'l':
+            clear_screen()
+            load_fname = collect_input(str, 'Enter filename to load: ')
+            print('\nLoading {:s}...\n'.format(load_fname))
+            io.chain_read(i_state,load_fname)
+            print('Done!\n')
+        #end load block
+        elif usr_in == 'p':
+            usr_in = 1
+            while usr_in == 1:
+                usr_in = collect_input(int, '-1 to exit, 1 to plot.')
+                if usr_in == 1:
+                    usr_in = raw_input("enter file name to plot: ")
+                    xs = collect_input(int, 'x = ')
+                    ys = collect_input(int, 'y = ')
+                    plot_out.Plot_Lattice(usr_in, xs, ys)
+                    usr_in = 1
+        #end plotting block
+        elif usr_in == 'm':
+            clear_screen()
+            sim_count = 0
+            usr_in = 0
+            while usr_in != -1:
+                usr_in = collect_input(int, 'preform minimization?(-1/1): ')
+                if usr_in == 1:
+                    calc_ittr = collect_input(int, 'set num itterations to minimize: ')
+                    hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
+                    js = 0
+                    hval = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)[1]
+
+                    print('H = {:f}T'.format(hval))
+
+                    parameters.llg.set_temperature(i_state,0.0)
+                    parameters.llg.set_damping(i_state, alphaD)
+                    parameters.llg.set_convergence(i_state, convThr)
+                    parameters.llg.set_output_configuration(i_state,True,True,4)
+                    hamiltonian.set_field(i_state,hval,hdir)
+                    parameters.llg.set_stt(i_state,True,0,STTdir)
+                    #hamiltonian.set_anisotropy(i_state,K,Kdir)
+                    parameters.llg.set_timestep(i_state, tS)
+                    parameters.llg.set_direct_minimization(i_state, use_minimization=True)
+                    #minimize
+                    print('Minimizing\n')
+                    parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
+                    simulation.start(i_state,Mtd,0)
+                    cur_fname = 'min_{:d}.ovf'.format(sim_count)
+                    if os.path.isfile(cur_fname):
+                        os.remove(cur_fname)
+                        pass
+                    io.chain_write(i_state,cur_fname)
+                    simulation.stop_all
+                    plot_out.Plot_Lattice(cur_fname, x_size, y_size)
+                    print('Done!\n')
+                    sim_count += 1
+                continue
+        #end minimize block
+        elif usr_in == 'r':
+            clear_screen()
+            sim_count = 0
+            sim_time = 0
+            prev_ittr = 0
+            prev_sim_time = 0
 
             parameters.llg.set_temperature(i_state,0.0)
             parameters.llg.set_damping(i_state, alphaD)
             parameters.llg.set_convergence(i_state, convThr)
-            parameters.llg.set_output_configuration(i_state,True,True,4)
-            hamiltonian.set_field(i_state,hval,hdir)
-            parameters.llg.set_stt(i_state,True,0,STTdir)
-            #hamiltonian.set_anisotropy(i_state,K,Kdir)
-            parameters.llg.set_timestep(i_state, tS)
-            parameters.llg.set_direct_minimization(i_state, use_minimization=True)
-            #minimize
-            print('Minimizing\n')
-            parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
-            simulation.start(i_state,Mtd,0)
-            cur_fname = 'min_{:d}.ovf'.format(sim_count)
-            if os.path.isfile(cur_fname):
-                os.remove(cur_fname)
-                pass
-            io.chain_write(i_state,cur_fname)
-            simulation.stop_all
-            plot_out.Plot_Lattice(cur_fname, x_size, y_size)
-            print('Done!\n')
-            sim_count += 1
-        continue
+            #parameters.llg.set_output_configuration(i_state,True,True,4)
 
-    last_sim_count = sim_count
-    sim_count = 0
-    prev_ittr = 0
-    while calc_ittr != -1:  
-        calc_ittr = collect_input(int, 'set num itterations to run, 0 to use last used values, -1 to quit: ')
-        if calc_ittr == -1:
-            #return to top of loop and exit
-            continue
-        elif calc_ittr == 0:
-            if sim_count == 0:
-                print('Run one simulation first!\n')
-                continue
-            calc_ittr = prev_ittr
-            print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d}'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],prev_ittr))
-        else:
-            prev_ittr = calc_ittr
-            hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
-            js = collect_input(float,'enter current val: ') # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
-            temp = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)
-            js = temp[0]
-            hval = temp[1]
-            for i in range(len(STTdir)):
-                STTdir[i] = collect_input(float, 'input Polerization element {:d}: '.format(i+1))
-            print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d}'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],calc_ittr))
-
-        parameters.llg.set_stt(i_state,True,js,STTdir)
-        parameters.llg.set_temperature(i_state,0.0)
-        parameters.llg.set_damping(i_state, alphaD)
-        parameters.llg.set_convergence(i_state, convThr)
-        parameters.llg.set_output_configuration(i_state,True,True,4)
-        hamiltonian.set_field(i_state,hval,hdir)
-        parameters.llg.set_timestep(i_state, tS)
-
-        print('Running simulation...\n')
-
-        if not read_config:#no config loaded
-            itt_num = int(calc_ittr / 10)
-            parameters.llg.set_iterations(i_state,itt_num,itt_num)
-            counter = 0
-            while counter < 10:
-                if (counter == 0) and (usr_in == 1):
-                    io.chain_read(i_state,"min_{:d}.ovf".format(last_sim_count))
-                elif (counter == 0) and (usr_in == -1):
-                    io.chain_read(i_state,load_fname)
+            while True:            
+                sim_time = collect_input(int, 'set time to run in fs, 0 to use last used values, -1 to exit simulation mode: ')
+                if sim_time == -1:
+                    break
+                elif sim_time == 0:
+                    if sim_count == 0:
+                        print('Run one simulation first!\n')
+                        continue
+                    calc_ittr = prev_ittr
+                    print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d} = {:f}fs'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],int(prev_ittr),prev_sim_time))
                 else:
-                    io.chain_read(i_state,"grad_{:d}.ovf".format(counter - 1))
+                    calc_ittr = int(float(sim_time) * 0.001 / tS) #n_fs * fs/(dt*ps)
+                    prev_ittr = calc_ittr
+                    prev_sim_time = sim_time
+                    hval = collect_input(float, 'enter H field strength: ') # magnetic Field direction
+                    js = collect_input(float,'enter current val: ') # Spin Torque magnitude EDIT SET TO 0 norm 3e-04
+                    temp = convert_from_dimcord_j(DMI, Exchange, js, hval, x_size, y_size, lc)
+                    js = temp[0]
+                    hval = temp[1]
+                    for i in range(len(STTdir)):
+                        STTdir[i] = collect_input(float, 'input Polerization element {:d}: '.format(i+1))
+                    print('H = {:f}T\nJ = {:f}A\nP = ({:f},{:f},{:f})\nItterations = {:d} = {:f}fs'.format(hval,js, STTdir[0],STTdir[1],STTdir[2],int(prev_ittr),sim_time))
+                #end quit/re-run/new-sim block
+
+                #setup initial parameters user for simulation
+                parameters.llg.set_stt(i_state,True,js,STTdir)
+                #parameters.llg.set_temperature(i_state,0.0)
+                #parameters.llg.set_damping(i_state, alphaD)
+                #parameters.llg.set_convergence(i_state, convThr)
+                #parameters.llg.set_output_configuration(i_state,True,True,4)
+                hamiltonian.set_field(i_state,hval,hdir)
+                parameters.llg.set_timestep(i_state, tS)
+                parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
+
+                print('Running simulation...\n')
+
+                cur_fname = 'r_{:d}.ovf'.format(sim_count)
+                if os.path.isfile(cur_fname):
+                #if current filename already exists within directory
+                #remove it
+                        os.remove(cur_fname)
+
                 simulation.start(i_state,Mtd,Slvr)
-                
-                if os.path.isfile("grad_{:d}.ovf".format(counter)):
-                    os.remove("grad_{:d}.ovf".format(counter))
-                    pass
-                io.chain_write(i_state,"grad_{:d}.ovf".format(counter))
+                io.chain_write(i_state, cur_fname)
                 simulation.stop_all
-                counter += 1
-                print('Sim {:d}/10 done\n'.format(counter))
-                pass #while counter < 10:
-        else:#config was read
-            if sim_count != 0:
-                prev_fname = 'r_{:d}.ovf'.format(sim_count - 1)
-                io.chain_read(i_state, prev_fname)
-                pass
-            cur_fname = 'r_{:d}.ovf'.format(sim_count)
-            parameters.llg.set_iterations(i_state,calc_ittr,calc_ittr)
-            if os.path.isfile(cur_fname):
-                    os.remove(cur_fname)
-                    pass
-            simulation.start(i_state,Mtd,Slvr)
-            io.chain_write(i_state, cur_fname)
-            simulation.stop_all
-            plot_out.Plot_Lattice(cur_fname, x_size, y_size)
-        sim_count += 1
-        continue
-    print('Done!')
+                plot_out.Plot_Lattice(cur_fname, x_size, y_size)
+                sim_count += 1
+
+                print('Done!')
+                continue
+            #while not (sim_time == -1):    
+        #end run simulation block
+        elif usr_in == 'q':
+        #break and exit loop to quit program
+            break
+    clear_screen()
     return(0) #run_simulation

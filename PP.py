@@ -52,7 +52,7 @@ def main():
 
 	print('Welcome to spirit sandbox.\n')
 
-	while in_var != -1:
+	while in_var != -1: # TODO: remove from loop
 		read_config = collect_input(int, 'read in a config file?(0/1): ')
 		if read_config == 1:
 			config_fname = raw_input('enter config your_file_name.txt: ')
@@ -161,16 +161,8 @@ def main():
 		
 		with state.State(configfile=config_fname, quiet=True) as i_state:
 			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, k_val, Kdir, Exchange_mm, DMI_mm, Dij, alphaD, x_size, y_size, read_config, lc)
-		in_var = 1
-		while in_var == 1:
-			in_var = collect_input(int, '-1 to exit program, 0 to exit plotting, 1 to plot.')
-			if in_var == 1:
-				in_var = raw_input("enter file name to plot: ")
-				xs = collect_input(int, 'x = ')
-				ys = collect_input(int, 'y = ')
-				plot_out.Plot_Lattice(in_var, xs, ys)
-				in_var = 1
-	return(0)#main()
+
+		return(0)#main() TODO: fix this so its not in a loop
 #end main
 
 if __name__ == "__main__":
