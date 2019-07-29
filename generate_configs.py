@@ -1,4 +1,5 @@
 #file start
+from __future__ import print_function
 import file_parser
 import fileinput
 import sympy as sy
@@ -6,6 +7,7 @@ import numpy as np
 import random
 import math
 import os
+#testing import
 
 def is_number(num):
     try:
@@ -13,31 +15,95 @@ def is_number(num):
         return(True)
     except ValueError:
         return(False)
-        
 
-def gen_h_file(x_size, y_size, J, D):
+def collect_input(val_type, prompt):
+	while True:	
+		try:
+			val = raw_input(prompt)
+			return(val_type(val))
+		except ValueError:
+			print('Invalid input!\n')
+			continue
+        
+def gen_h_file(x_size, y_size, J, D, x_periodic, y_periodic):
     with file_parser.Parse_File('h.txt') as fp:
         fp.delete_contents()
-        
+        usr_in = collect_input(int, 'Use seperated dmi, one value over whole lattice, or checkerboard(0/1/2)? ')
+
         in_string = '{:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6d}  {:<6.3f}  {:<6.3f}  {:<6d}  {:<6d}  {:<6d}\n'
         fp.write_to_file('{:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}  {:<6s}\n'.format('i','j','da','db','dc','Jij','Dij','Dija','Dijb','Dijc'))
-        
-        if x_size > y_size:
-            divider = y_size
-        elif y_size > x_size:
-            divider = x_size / 2
-        else:
-            divider = x_size
-
-        for i in range(x_size*y_size):
-            #switch signs on the DMI when half of the xsize is reached
-            d = int(math.pow(-1,math.floor(i/divider)+1))
-            fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
-            pass
-
-        for j in range(x_size*(y_size-1)):
-            fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,-1,0,0))
-            pass
+        if usr_in == 0:
+            divider = collect_input(int, 'Enter number of dmi to impliment: ')
+            divider = x_size / divider
+            print('periodic in x = {:d}, periodic in y = {:d}\n'.format(x_periodic, y_periodic))
+            print('Generating DMI at {:d} for {:d}x{:d} system...\n'.format(divider, x_size, y_size))
+            #assign dmi in the x direction
+            for i in range(x_size*y_size):
+                #switch signs on the DMI when half of the xsize is reached
+                d = int(math.pow(-1,math.floor(i/divider)+1))
+                if (x_size - 1) == (i % x_size):
+                    continue
+                else:
+                    fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
+            #assign dmi in the y direction
+            for j in range(x_size*(y_size - 1)):
+                d = int(math.pow(-1,math.floor(i/divider)))
+                fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,d,0,0))
+            #end split dmi
+        elif usr_in == 1:
+            type_dmi = collect_input(int, 'Neel or Bloc DMI(-1/1)? ')
+            for i in range(x_size*y_size):
+                #switch signs on the DMI when half of the xsize is reached
+                if ((x_size - 1) == (i % x_size)) and x_periodic:
+                    fp.write_to_file(in_string.format(i,1 + i - x_size,0,0,0,J,D,type_dmi,0,0))
+                elif ((x_size - 1) == (i % x_size)) and (not x_periodic):
+                    continue
+                else:
+                    fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,type_dmi,0,0))
+            for j in range(x_size*(y_size - 1)):
+                if (0 == (j / x_size)) and y_periodic:
+                    fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,0,type_dmi,0))
+                    fp.write_to_file(in_string.format(j,x_size*(y_size - 1) + j,0,0,0,J,D,0,type_dmi,0))
+                else:
+                    fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,0,type_dmi,0))
+################################################################
+# this algorithim assumes that the y size of the system is 
+# divisible by 3 and x size by 2=>4
+################################################################
+# create DMI pairs with pattern:
+# | + | - |
+# |+|-|+|-|
+# | + | - |
+# First, the x direction is traversed, assigning n->n+1 if it is
+# not an edge case. Then y is traversed, assigning n->n+rowsize,
+# where each will switch signs as the given region requires.
+################################################################
+        elif usr_in == 2:
+            flag = True
+            divider = 2 #start the generation of dmi at half of width
+            for i in range(x_size*y_size):
+                # if the current element is a multipul of a third of the row size
+                check = (i / x_size) % (y_size / 3)
+                if flag:
+                    divider = 4
+                else:
+                    divider = 2
+                temp = int(math.floor(i / (x_size/divider)))
+                exponent = temp % divider
+                d = int(math.pow(-1,exponent))
+                if not ((i / x_size) == (y_size - 1)):
+                    if ((i / x_size) % (y_size / 3)) == 0:
+                        fp.write_to_file(in_string.format(i,i+x_size,0,0,0,J,D,-1 * d,0,0))
+                    else:
+                        fp.write_to_file(in_string.format(i,i+x_size,0,0,0,J,D,d,0,0))
+                if (x_size - 1) == (i % x_size):
+                    if(check + 1 == 3):
+                        flag = not flag
+                    continue 
+                else:
+                    fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
+    #end with
+#end gen_h_file
 
 def gen_anis_pattern(x_size, y_size, pattern, width, K_mag = None):
     with file_parser.Parse_File('anisotropy.txt') as fp:
@@ -135,8 +201,3 @@ def gen_r_pos(x_size, y_size):
                 pass
         pass
     return
-"""
-def update_config(x_size, y_size):
-    with file_parser.Parse_File('boundary.cfg') as fp:
-        start_line = fp.find_line_number('basis')
-"""

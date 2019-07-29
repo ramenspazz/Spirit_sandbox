@@ -40,16 +40,16 @@ def main():
 	x_size = 0
 	y_size = 0
 	Mtd = 1
-	convThr = 1.00e-12 # Convergence condition
-	tS = 1e-06 # LLG time step
+	convThr = 1e-12 # Convergence condition
+	tS = 1e-4 # LLG time step
 	k_val =  0.0  # Anisotropy
 	Kdir = [0.0, 0.0, 1.0] # Anisotropy direction
 	Exchange_mm = 18.16
 	DMI_mm = 1.87
 	Dij = []
-	lc = 6
+	lc = 6.0
 	symmetry = 4
-
+	
 	print('Welcome to spirit sandbox.\n')
 
 	while in_var != -1: # TODO: remove from loop
@@ -61,9 +61,10 @@ def main():
 				x_size = collect_input(int, 'x lattice size: ')
 				y_size = collect_input(int, 'y lattice size: ')
 				#set lattice constant
+				
 				with file_parser.Parse_File('gen_config.txt') as fp:
 					lc = fp.file_readline(None, 'lattice_constant')
-					lc = int(lc.split()[1])
+					lc = float(lc.split()[1])
 				#update bravis vector
 				with file_parser.Parse_File('gen_config.txt') as fp:
 					line_num = fp.find_line_number('bravais_vectors')
@@ -76,19 +77,21 @@ def main():
 				
 				in_var = collect_input(int, 'Use a custom DMI (0/1)?: ')
 				if in_var == 1:
+					# TODO: add lc / 10 for dmi and exchange for lattice scale
 					DMI_mm = collect_input(float, 'Enter value for DMI: ')
-					DMI_atom = float(DMI_mm * (lc / 10) * 1.602e+04) / float(symmetry)
+					DMI_atom = float(DMI_mm * 1.602e+04 * lc / 10.0) / float(symmetry)
 					Exchange_mm = collect_input(float, 'Enter value for Exchange: ')
-					Exchange_atom = float(Exchange_mm * (lc / 10) * 1.602e+13) / float(2 * symmetry)
+					Exchange_atom = float(Exchange_mm * 1.602e+13 * lc / 10.0) / float(2 * symmetry)
 					print('DMI = {:5f}\nExchange = {:9.8f}'.format(DMI_atom, Exchange_atom))
 
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('#DMI', '{:<8.5f}\n'.format(DMI_mm))
 						fp.set_config_var('#EXCHANGE', '{:<18.17f}\n'.format(Exchange_mm))
-					generate_configs.gen_h_file(x_size,y_size, Exchange_atom, DMI_atom)
-
-					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('interaction_pairs_file', 'h.txt\n')
+					#read periodic boundary conditions
+					with file_parser.Parse_File(config_fname) as fp:
+						bc = fp.file_readline(None, 'boundary_conditions').split()
+					generate_configs.gen_h_file(x_size,y_size, Exchange_atom, DMI_atom, int(bc[1]), int(bc[2]))
 				else:
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('interaction_pairs_file', '.\n')
@@ -109,7 +112,7 @@ def main():
 						k_val = k_val * 1.6021766e-05 # J/m^3 -> meV
 						print('K = {:f}\n'.format(k_val))
 						sigma = collect_input(float, 'Enter value for sigma in percent of K: ')
-						generate_configs.gen_anis_random(x_size,y_size, k_val, k_val * sigma)
+						generate_configs.gen_anis_random(x_size,y_size, k_val, sigma)
 
 					with file_parser.Parse_File('gen_config.txt') as fp:
 						fp.set_config_var('anisotropy_file', 'anisotropy.txt\n')
@@ -158,7 +161,6 @@ def main():
    			y_size = collect_input(int, 'y lattice size: ')
 		
 		Slvr = collect_input(int, 'enter solver num(1-4): ')
-		
 		with state.State(configfile=config_fname, quiet=True) as i_state:
 			sim_script.run_simulation(i_state, Mtd, Slvr, convThr, tS, k_val, Kdir, Exchange_mm, DMI_mm, Dij, alphaD, x_size, y_size, read_config, lc)
 
