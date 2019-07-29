@@ -1,7 +1,11 @@
+![](skyrmion.gif)
+
 # Spirit_sandbox
 # Installing spirit library
 Spirit spin simulation framework: see spirit-code.github.io
-
+ 	Add files via upload 	2 months ago
+	LICENSE 	Update LICENSE 	2 months ago
+	PP.py
 The first required step to use this Sandbox is to install spirit. To install spirit from the release - or any branch if you so choose, first ensure that you have these dependencies (this setup instruction assumes you are running Linux):
 git and cmake
 
