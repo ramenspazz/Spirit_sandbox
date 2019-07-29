@@ -2,8 +2,8 @@
 
 
 
-#DMI 0.01000 
-#EXCHANGE 0.00000000001500000
+#DMI 0.00400 
+#EXCHANGE 0.00000000003200000
 
 
 
@@ -23,8 +23,8 @@ llg_beta 0.5
 ### (heisenberg_neighbours, heisenberg_pairs, gaussian)
 hamiltonian                heisenberg_pairs
 
-### Boundary_conditions (a b c): 0(open), 1(periodical)
-boundary_conditions        0 0 0
+### Boundary conditions (in a b c) = 0(open), 1(periodical)
+boundary_conditions 0 0 0
 
 ################ End Hamiltonian #################
 
@@ -35,15 +35,16 @@ bravais_lattice sc
 lattice_constant 10
 
 bravais_vectors
-100 0 0
-0 50 0
+300 0 0
+0 150 0
 0 0 1
-
 n_basis_cells 1 1 1
 
-mu_s 1.0
+mu_s 6.0
 
 anisotropy_file anisotropy.txt
+
+
 
 interaction_pairs_file h.txt
 ############################################
