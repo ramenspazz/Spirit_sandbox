@@ -57,6 +57,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     while True:
         clear_screen()
         if startup: # load initial state or set up new state
+            #initialize ddi
             usr_in = collect_input(int, 'Load state from file (0/1)?: ')
             if usr_in == 1:
                 load_fname = collect_input(str, 'Enter filename to load: ')
@@ -67,7 +68,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             continue
         #end if startup block
 
-        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\np to plot\nq to quit\n')
+        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\np to plot\nmtd for set method\nq to quit\n')
         print('\n')
 
         if usr_in == 'l':
@@ -104,11 +105,12 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                 elif usr_in == 2:
                     Skyrmion_size = collect_input(int, "Enter Skyrmion size: ")
                     phase = collect_input(float, 'Enter Skyrmion phase: ')
+                    anti = collect_input(int, 'Antiskyrmion or skyrmion (0/1)?: ')
                     pos = [0,0,0]
                     for i in range(len(pos)):
                         pos[i] = collect_input(int, 'Enter position {:d} for skyrmion (keep z = 0): '.format(i + 1))
                     print('Initilizing Skyrmion...\n')
-                    configuration.skyrmion(i_state, Skyrmion_size, 1, phase, False, False, pos) #initialize skyrmion
+                    configuration.skyrmion(i_state, Skyrmion_size, 1, phase, False, anti, pos) #initialize skyrmion
                     if os.path.isfile("start.ovf"):
                         os.remove("start.ovf")
                         pass
@@ -170,12 +172,50 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                     sim_count += 1
                 continue
         #end minimize block
+        elif usr_in == 'mtd':
+            clear_screen()
+            print('running set method...\n')
+            #set per-run parameters
+            parameters.llg.set_temperature(i_state,0)
+            parameters.llg.set_damping(i_state, alphaD)
+            parameters.llg.set_convergence(i_state, convThr)
+            parameters.llg.set_timestep(i_state, tS)
+            for i in range(1,6):
+                io.chain_read(i_state,'start_state.ovf')
+                #apply current block
+                parameters.llg.set_stt(i_state,True,i,[0,-1,0])
+                hamiltonian.set_field(i_state,0.8,[0,0,1])
+                calc_ittr = int(10000 * 0.001 / tS)
+                parameters.llg.set_iterations(i_state,calc_ittr/4,0)
+
+                print('running sim {:d} of 5\n'.format(i))
+                start = time.time()
+                for j in range(1,5):
+                    simulation.start(i_state,Mtd,Slvr)
+                    io.chain_write(i_state, '{:d}of5_current_{:d}of4.ovf'.format(i,j))
+                    simulation.stop_all(i_state)
+                end = time.time()
+                print('sim {:d} took {:f}s to run\nrelaxing...'.format(i,end - start))
+
+                #turn off current and relax block
+                parameters.llg.set_stt(i_state,True,0,[0,0,0])
+                hamiltonian.set_field(i_state,0.8,[0,0,1])
+                calc_ittr = int(5000 * 0.001 / tS)
+                parameters.llg.set_iterations(i_state,calc_ittr,0)
+                simulation.start(i_state,Mtd,Slvr)
+                simulation.stop_all(i_state)
+                io.chain_write(i_state, '{:d}_current_off.ovf'.format(i))
+                print('finished run {:d} of 5'.format(i))
+                continue
+
+            #end set method
         elif usr_in == 'r':
             clear_screen()
             sim_count = 0
             sim_time = 0
             prev_ittr = 0
             prev_sim_time = 0
+            calc_ittr = 0
             #set per-run parameters
             parameters.llg.set_temperature(i_state,0)
             parameters.llg.set_damping(i_state, alphaD)

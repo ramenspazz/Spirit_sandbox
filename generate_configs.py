@@ -40,32 +40,39 @@ def gen_h_file(x_size, y_size, J, D, x_periodic, y_periodic):
             #assign dmi in the x direction
             for i in range(x_size*y_size):
                 #switch signs on the DMI when half of the xsize is reached
-                d = int(math.pow(-1,math.floor(i/divider)+1))
+                d = math.floor(i/divider) % 2
                 if (x_size - 1) == (i % x_size):
                     continue
                 else:
-                    fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,d,0))
+                    if d == 0:
+                        fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,1,0,0))
+                    else:
+                        fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,-1,0,0))
             #assign dmi in the y direction
             for j in range(x_size*(y_size - 1)):
-                d = int(math.pow(-1,math.floor(i/divider)))
-                fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,d,0,0))
+                d = math.floor(i/divider) % 2
+                if d == 0:
+                    fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,0,1,0))
+                else:
+                    fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,0,-1,0))
             #end split dmi
         elif usr_in == 1:
             type_dmi = collect_input(int, 'Neel or Bloc DMI(-1/1)? ')
             for i in range(x_size*y_size):
                 #switch signs on the DMI when half of the xsize is reached
-                if ((x_size - 1) == (i % x_size)) and x_periodic:
-                    fp.write_to_file(in_string.format(i,1 + i - x_size,0,0,0,J,D,type_dmi,0,0))
-                elif ((x_size - 1) == (i % x_size)) and (not x_periodic):
+                if (x_size - 1) == (i % x_size):
                     continue
                 else:
-                    fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,type_dmi,0,0))
+                    if type_dmi + 1 == 0:
+                        fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,0,type_dmi,0))
+                    else:
+                        fp.write_to_file(in_string.format(i,i+1,0,0,0,J,D,type_dmi,0,0))
             for j in range(x_size*(y_size - 1)):
-                if (0 == (j / x_size)) and y_periodic:
-                    fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,0,type_dmi,0))
-                    fp.write_to_file(in_string.format(j,x_size*(y_size - 1) + j,0,0,0,J,D,0,type_dmi,0))
+                if type_dmi + 1 == 0:
+                    fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,type_dmi,0,0))
                 else:
                     fp.write_to_file(in_string.format(j,j+x_size,0,0,0,J,D,0,type_dmi,0))
+                    #fp.write_to_file(in_string.format(j,x_size*(y_size - 1) + j,0,0,0,J,D,0,type_dmi,0))
 ################################################################
 # this algorithim assumes that the y size of the system is 
 # divisible by 3 and x size by 2=>4
