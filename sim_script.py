@@ -57,6 +57,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
     while True:
         clear_screen()
         if startup: # load initial state or set up new state
+            #initialize ddi
             usr_in = collect_input(int, 'Load state from file (0/1)?: ')
             if usr_in == 1:
                 load_fname = collect_input(str, 'Enter filename to load: ')
@@ -67,7 +68,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             continue
         #end if startup block
 
-        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\np to plot\nq to quit\n')
+        usr_in = collect_input(str, 'Enter command:\nl to load\nm to minimize\nr to run simulation\np to plot\nmtd for set method\nq to quit\n')
         print('\n')
 
         if usr_in == 'l':
@@ -104,11 +105,12 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                 elif usr_in == 2:
                     Skyrmion_size = collect_input(int, "Enter Skyrmion size: ")
                     phase = collect_input(float, 'Enter Skyrmion phase: ')
+                    anti = collect_input(int, 'Antiskyrmion or skyrmion (0/1)?: ')
                     pos = [0,0,0]
                     for i in range(len(pos)):
                         pos[i] = collect_input(int, 'Enter position {:d} for skyrmion (keep z = 0): '.format(i + 1))
                     print('Initilizing Skyrmion...\n')
-                    configuration.skyrmion(i_state, Skyrmion_size, 1, phase, False, False, pos) #initialize skyrmion
+                    configuration.skyrmion(i_state, Skyrmion_size, 1, phase, False, anti, pos) #initialize skyrmion
                     if os.path.isfile("start.ovf"):
                         os.remove("start.ovf")
                         pass
@@ -170,12 +172,60 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
                     sim_count += 1
                 continue
         #end minimize block
+        elif usr_in == 'mtd':
+            clear_screen()
+            #set values
+            divider = 2
+            current_time = collect_input(float, "amount of time to apply current: ")
+            relax_time = collect_input(float, "amount of time to relax: ")
+            begin = collect_input(float, 'enter begining: ')
+            end = collect_input(float, 'enter end: ')
+            count = collect_input(float, 'enter step size: ')
+            current_time = int(current_time * 0.001 / tS)
+            relax_time = int(relax_time * 0.001 / tS)
+            for i, sim_num in enumerate(np.linspace(begin, end, (end-begin)/count, endpoint=True)):
+                configuration.plus_z(i_state)
+                hval = sim_num
+                temp = convert_from_dimcord_j(DMI, Exchange, 0.883, hval, x_size, y_size, lc)
+                hval = temp[1]
+                current = temp[0]
+                print('running set method...\n')
+                #set per-run parameters
+                parameters.llg.set_temperature(i_state,0)
+                parameters.llg.set_damping(i_state, alphaD)
+                parameters.llg.set_convergence(i_state, convThr)
+                parameters.llg.set_timestep(i_state, tS)
+
+                #apply current block
+                parameters.llg.set_stt(i_state,True,current,[0,-1,0])
+                hamiltonian.set_field(i_state,hval,[0,0,1])
+                calc_ittr = int(6000 * 0.001 / tS)
+                parameters.llg.set_iterations(i_state,calc_ittr/divider,0)
+
+                start = time.time()
+                for i in range(1,divider+1):
+                    simulation.start(i_state,Mtd,Slvr)
+                    io.chain_write(i_state, '{:d}of{:d}_current_{:4.2f}.ovf'.format(i,divider,hval))
+                    simulation.stop_all(i_state)
+                end = time.time()
+                print(end - start)
+                #turn off current and relax
+                parameters.llg.set_stt(i_state,True,0,[0,0,0])
+                hamiltonian.set_field(i_state,16,[0,0,1])
+                calc_ittr = int(6000 * 0.001 / tS)
+                parameters.llg.set_iterations(i_state,relax_time,0)
+                simulation.start(i_state,Mtd,Slvr)
+                simulation.stop_all(i_state)
+                io.chain_write(i_state, 'current_off_{:4.2f}.ovf'.format(hval))
+            #end set method
+
         elif usr_in == 'r':
             clear_screen()
             sim_count = 0
             sim_time = 0
             prev_ittr = 0
             prev_sim_time = 0
+            calc_ittr = 0
             #set per-run parameters
             parameters.llg.set_temperature(i_state,0)
             parameters.llg.set_damping(i_state, alphaD)

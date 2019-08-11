@@ -43,7 +43,7 @@ def Plot_Lattice(f_name, n_cols, n_rows):
 	return
 
 plot_name = raw_input('Enter file name to plot: ')
-xs = int(raw_input('x = '))
-ys = int(raw_input('y = '))
+#xs = int(raw_input('x = '))
+#ys = int(raw_input('y = '))
 
-Plot_Lattice(plot_name, xs, ys)
+Plot_Lattice(plot_name, 150,50)

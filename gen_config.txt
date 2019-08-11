@@ -8,12 +8,13 @@
 
 
 output_file_tag   boundary
-log_output_folder  .
-llg_output_folder  .
+log_output_folder  output_log
+llg_output_folder  output_llg
 mc_output_folder   .
 gneb_output_folder .
 mmf_output_folder  .
 ema_output_folder  .
+
 
 llg_beta 0.5
 
@@ -21,7 +22,7 @@ llg_beta 0.5
 
 ### Hamiltonian Type
 ### (heisenberg_neighbours, heisenberg_pairs, gaussian)
-hamiltonian                heisenberg_pairs
+hamiltonian heisenberg_pairs
 
 ### Boundary conditions (in a b c) = 0(open), 1(periodical)
 boundary_conditions 0 0 0
@@ -35,16 +36,15 @@ bravais_lattice sc
 lattice_constant 10
 
 bravais_vectors
-300 0 0
-0 150 0
+900 0 0
+0 300 0
 0 0 1
+
 n_basis_cells 1 1 1
 
 mu_s 6.0
 
 anisotropy_file anisotropy.txt
-
-
 
 interaction_pairs_file h.txt
 ############################################
