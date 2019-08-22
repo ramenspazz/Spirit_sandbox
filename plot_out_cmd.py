@@ -4,6 +4,9 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 from matplotlib.colors import LinearSegmentedColormap
 
+def get_coords(count, n_cols):
+	return([int(count / int(n_cols)),int(count % int(n_cols))])
+
 def Plot_Lattice(f_name, n_cols, n_rows):
 	###===============================================###
 	# Itterativly add temporary vectors pulled from		#
@@ -13,8 +16,8 @@ def Plot_Lattice(f_name, n_cols, n_rows):
 	###===============================================###
 	with open(f_name, 'r') as fp:
 		#start file parsing and plotting
-		X = np.arange(-n_cols/2,n_cols/2)
-		Y = np.arange(-n_rows/2,n_rows/2)
+		X = [n_cols]
+		Y = [n_rows]
 		#initialize data containers
 		U = np.zeros((n_rows, n_cols))
 		V = np.zeros((n_rows, n_cols))
@@ -31,19 +34,20 @@ def Plot_Lattice(f_name, n_cols, n_rows):
 				return(-1)
 			else:
 				temp = [float(i) for i in ln.split()]
-				U[count / n_cols][count % n_cols] = temp[0]
-				V[count / n_cols][count % n_cols] = temp[1]
-				M[count / n_cols][count % n_cols] = (temp[2]+1)/2
+				coords = get_coords(count, n_cols)
+				U[coords[0]][coords[1]] = temp[0]
+				V[coords[0]][coords[1]] = temp[1]
+				M[coords[0]][coords[1]] = (temp[2]+1)/2
 				count += 1
 				continue
 		
-		#mycmap = LinearSegmentedColormap.from_list('mycmap', ['blue', 'white', 'red'])
+		#mycmap = LinearSegmentedColormap.from_list('mycmap', ['red', 'blue', 'green'])
 		q = plt.quiver(U, V, M, cmap='plasma', units='xy', angles='xy', pivot='middle', width=0.25, scale=1.5)
 		plt.show()
 	return
 
-plot_name = raw_input('Enter file name to plot: ')
+plot_name = input('Enter file name to plot: ')
 #xs = int(raw_input('x = '))
 #ys = int(raw_input('y = '))
 
-Plot_Lattice(plot_name, 150,50)
+Plot_Lattice(plot_name, 10,10)

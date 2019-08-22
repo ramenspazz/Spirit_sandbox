@@ -15,7 +15,6 @@ gneb_output_folder .
 mmf_output_folder  .
 ema_output_folder  .
 
-
 llg_beta 0.5
 
 ################## Hamiltonian ###################
@@ -33,14 +32,16 @@ boundary_conditions 0 0 0
 
 ### The bravais lattice type
 bravais_lattice sc
-lattice_constant 10
+lattice_constant 5
 
 bravais_vectors
-900 0 0
-0 300 0
+150 0 0
+0 75 0
 0 0 1
 
-n_basis_cells 1 1 1
+
+
+_basis_cells 1 1 1
 
 mu_s 6.0
 

@@ -34,8 +34,8 @@ class Parse_File:
             #this loop reads lines and updates the file pointer
             #location each iteration until the desired text
             #is reached. Overshoots one line, so subtract off
-		    #the length of the final line reached in this loop
-	    	#after loop
+            #the length of the final line reached in this loop
+            #after loop
             while True:
                 prev = (self.fp).readline()
                 if var in prev:
@@ -80,7 +80,7 @@ class Parse_File:
     #set the variable name var in file to value val
     def set_config_var(self, var, val):
         try:
-	#seek to the file location passed and overwrite line with {var} {val}\n
+    #seek to the file location passed and overwrite line with {var} {val}\n
             (self.fp).seek(self.find_line_number(var))
             (self.fp).write('{:s} {:s}'.format(var, val))
             pass
@@ -91,10 +91,10 @@ class Parse_File:
 
     def write_to_file(self, val, line_num=None):
         try:
-	#if passed a line number, function will seek to the passed location
+    #if passed a line number, function will seek to the passed location
             if line_num is not None:
                 (self.fp).seek(line_num)
-	#else, just write to file starting from top (default)
+    #else, just write to file starting from top (default)
             (self.fp).write(val)
         except IOError:
             print('File error!\n\n\n')
@@ -107,26 +107,26 @@ class Parse_File:
 
 
 def list_keyword_and_edit(f_name):
-	#streach goal: make tk gui to modify
+    #streach goal: make tk gui to modify
     try:
         fp = open(f_name, 'r+') # open file for read + write
         editlist = [] #create blank array for storage of variables
-	#start building array enumerated with enumerated variable number and file pointer location
+    #start building array enumerated with enumerated variable number and file pointer location
         for i, ln in enumerate(fp):
-			if (ln[0] == "#") or (ln[0] == "\n"):
-			#if line starts with # or is blank, skip
-				continue
-			else:
-				#add enumerated variable number and
-				#file pointer location when non empty line
-				#is reached
-				editlist.append((i,ln))
-				pass
+            if (ln[0] == "#") or (ln[0] == "\n"):
+            #if line starts with # or is blank, skip
+                continue
+            else:
+                #add enumerated variable number and
+                #file pointer location when non empty line
+                #is reached
+                editlist.append((i,ln))
+                pass
         #display all variables to edit
         for i, var in enumerate(editlist):
-	#display variable number next to actual variable entry in file
+    #display variable number next to actual variable entry in file
             print('VN {:d}: {:s}'.format(i+1,var[1]))
-	#move fp to begining of file to begin editing and reset counters
+    #move fp to begining of file to begin editing and reset counters
         fp.seek(0)
         user_in = ''
         line_num = 0

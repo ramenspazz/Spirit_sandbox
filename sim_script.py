@@ -18,11 +18,11 @@ def clear_screen():
 def collect_input(val_type, prompt):
     while True:
         try:
-            val = raw_input(prompt)
+            val = input(prompt)
             return(val_type(val))
         except ValueError:
-			print('Invalid input!\n')
-			continue
+            print('Invalid input!\n')
+            continue
 
 def isclose(a,b,tol):
     if np.absolute(b - a) <= tol:
@@ -130,7 +130,7 @@ def run_simulation(i_state, Mtd, Slvr, convThr, tS, K, Kdir, Exchange, DMI, Dij,
             while usr_in == 1:
                 usr_in = collect_input(int, '-1 to exit, 1 to plot.')
                 if usr_in == 1:
-                    usr_in = raw_input("enter file name to plot: ")
+                    usr_in = input("enter file name to plot: ")
                     xs = collect_input(int, 'x = ')
                     ys = collect_input(int, 'y = ')
                     plot_out.Plot_Lattice(usr_in, xs, ys)

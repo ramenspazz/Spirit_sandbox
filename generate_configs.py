@@ -19,7 +19,7 @@ def is_number(num):
 def collect_input(val_type, prompt):
 	while True:	
 		try:
-			val = raw_input(prompt)
+			val = input(prompt)
 			return(val_type(val))
 		except ValueError:
 			print('Invalid input!\n')
@@ -36,7 +36,7 @@ def gen_h_file(x_size, y_size, J, D, x_periodic, y_periodic):
             divider = collect_input(int, 'Enter number of dmi to impliment: ')
             divider = x_size / divider
             print('periodic in x = {:d}, periodic in y = {:d}\n'.format(x_periodic, y_periodic))
-            print('Generating DMI at {:d} for {:d}x{:d} system...\n'.format(divider, x_size, y_size))
+            print('Generating DMI at {:f} for {:d}x{:d} system...\n'.format(divider, x_size, y_size))
             #assign dmi in the x direction
             for i in range(x_size*y_size):
                 #switch signs on the DMI when half of the xsize is reached
